@@ -31,7 +31,7 @@ namespace {
 httplib::Server *g_srv = nullptr;
 std::thread g_thread;
 std::atomic<int> g_port{0};
-std::string g_designer, g_presets, g_page_url;
+std::string g_designer, g_presets, g_page_url, g_palettes;
 
 std::string json_escape(const std::string &s)
 {
@@ -282,6 +282,39 @@ void handle_delete_preset(const httplib::Request &req, httplib::Response &res)
 	reply(res, 200, "{\"ok\":true}");
 }
 
+void handle_get_palettes(httplib::Response &res)
+{
+	std::ifstream in(fs::u8path(g_palettes), std::ios::binary);
+	if (!in)
+		return reply(res, 200, "{\"palettes\":{}}");
+	std::stringstream ss;
+	ss << in.rdbuf();
+	reply(res, 200, ss.str());
+}
+
+void handle_save_palettes(const httplib::Request &req, httplib::Response &res)
+{
+	if (req.body.size() > 200000)
+		return err(res, 413, "Too many palettes");
+	obs_data_t *d = obs_data_create_from_json(req.body.c_str());
+	if (!d)
+		return err(res, 400, "Bad request");
+	obs_data_release(d);
+	std::error_code ec;
+	fs::create_directories(fs::u8path(g_palettes).parent_path(), ec);
+	const fs::path tmp = fs::u8path(g_palettes + ".tmp");
+	{
+		std::ofstream out(tmp, std::ios::binary);
+		if (!out)
+			return err(res, 500, "Could not write the palettes");
+		out << req.body;
+	}
+	fs::rename(tmp, fs::u8path(g_palettes), ec);
+	if (ec)
+		return err(res, 500, "Could not save the palettes");
+	reply(res, 200, "{\"ok\":true}");
+}
+
 void handle_static(const httplib::Request &req, httplib::Response &res)
 {
 	std::string p = httplib::detail::decode_url(req.path, false);
@@ -342,6 +375,7 @@ void forge_http_start(const std::string &designer_dir, const std::string &preset
 	while (!g_designer.empty() && (g_designer.back() == '/' || g_designer.back() == '\\'))
 		g_designer.pop_back();
 	g_page_url = file_url(g_designer + "/transition-forge.html");
+	g_palettes = (fs::u8path(g_presets).parent_path() / "palettes.json").u8string();
 
 	g_srv = new httplib::Server();
 	g_srv->set_payload_max_length(25u * 1000 * 1000);
@@ -351,8 +385,7 @@ void forge_http_start(const std::string &designer_dir, const std::string &preset
 			return;
 		reply(res, 200,
 		      "{\"ok\":true,\"presetsDir\":\"" + json_escape(g_presets) + "\",\"root\":\"" +
-			      json_escape(g_designer) + "\",\"fileUrl\":\"" + json_escape(g_page_url) +
-			      "\",\"busy\":false}");
+			      json_escape(g_designer) + "\",\"fileUrl\":\"" + json_escape(g_page_url) + "\"}");
 	});
 	g_srv->Get("/api/presets", [](const httplib::Request &req, httplib::Response &res) {
 		if (api_ok(req, res))
@@ -370,9 +403,13 @@ void forge_http_start(const std::string &designer_dir, const std::string &preset
 		if (api_ok(req, res))
 			handle_save_logo(req, res);
 	});
-	g_srv->Post("/api/render", [](const httplib::Request &req, httplib::Response &res) {
+	g_srv->Get("/api/palettes", [](const httplib::Request &req, httplib::Response &res) {
 		if (api_ok(req, res))
-			err(res, 501, "Video export is not part of the built-in plugin. Use the native OBS transitions.");
+			handle_get_palettes(res);
+	});
+	g_srv->Post("/api/palettes", [](const httplib::Request &req, httplib::Response &res) {
+		if (api_ok(req, res))
+			handle_save_palettes(req, res);
 	});
 	g_srv->Get(R"(/.*)", [](const httplib::Request &req, httplib::Response &res) {
 		if (!origin_ok(req)) {

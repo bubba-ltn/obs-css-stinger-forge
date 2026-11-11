@@ -70,7 +70,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 <div id="app">
   <header>
     <h1>OBS CSS Stinger Forge</h1>
-    <p>Design a scene transition, then copy the URL into an OBS Browser Source.</p>
+    <p>Design a transition, then save it as a native OBS transition.</p>
   </header>
   <main>
     <section class="panel">
@@ -89,12 +89,6 @@ button:disabled{opacity:.45;cursor:not-allowed}
           <option value="overshoot">Overshoot</option>
           <option value="linear">Linear</option>
         </select></div>
-      <div class="row"><label>Play style</label>
-        <select id="mode">
-          <option value="reveal">Reveal: plays when scene becomes active</option>
-          <option value="full">Full: cover, cut, reveal (hotkey / loop)</option>
-        </select></div>
-
       <div class="row" id="rowAng" hidden><label>Angle <output id="o_ang"></output></label><input type="range" id="ang" min="-60" max="60" step="1"></div>
       <div class="row" id="rowSc" hidden><label>Scroll speed <output id="o_sc"></output></label><input type="range" id="sc" min="0.25" max="4" step="0.25"></div>
 
@@ -114,6 +108,11 @@ button:disabled{opacity:.45;cursor:not-allowed}
       <h2>Look</h2>
       <div class="row"><label>Palette</label><select id="preset"></select></div>
       <div class="colors"><input type="color" id="c1" title="Color 1 (leading)"><input type="color" id="c2" title="Color 2"><input type="color" id="c3" title="Color 3 (top layer)"></div>
+      <div class="row"><label>Save these colors as a palette</label>
+        <div class="logo-pick"><input type="text" id="palname" maxlength="30" placeholder="Palette name" style="flex:1;min-width:120px">
+        <button type="button" class="chip" id="palSave" disabled>Save palette</button>
+        <button type="button" class="chip" id="palDel" hidden>Delete</button></div>
+        <div class="hint" id="palHint"></div></div>
       <div class="row"><label>Logo image (optional)</label>
         <div class="logo-pick">
           <img id="logoThumb" alt="" hidden>
@@ -137,26 +136,11 @@ button:disabled{opacity:.45;cursor:not-allowed}
       <div class="bar">
         <button class="play" id="play">▶ Play</button>
         <label><input type="checkbox" id="loop"> Loop preview</label>
-        <span class="hint">Preview shows Scene A cutting to Scene B at the midpoint (Full) or revealing Scene B (Reveal).</span>
+        <span class="hint">Preview shows Scene A covered, cut to Scene B at the midpoint, then revealed.</span>
       </div>
 
-      <div class="panel" style="margin-top:16px">
-        <h2>OBS Browser Source URL</h2>
-        <textarea id="url" readonly></textarea>
-        <div class="btns"><button id="copy">Copy URL</button><a id="open" target="_blank" rel="noopener">Open player</a><span class="hint" id="copied"></span></div>
-        <details open>
-          <summary>How to use it in OBS</summary>
-          <ol>
-            <li>Open this file from your computer (double-click it) so the URL above points to it, then copy the URL.</li>
-            <li>In OBS add a <b>Browser</b> source, paste the URL, leave <i>Local file</i> unchecked, set Width <code>1920</code> and Height <code>1080</code>.</li>
-            <li>Check <b>Refresh browser when scene becomes active</b>. Put the source on top of each scene you cut to, or in a shared nested scene.</li>
-            <li>With Reveal, the screen is covered the moment the scene goes live and then wipes away to show it. Use Full if you trigger it by hotkey or by clicking the source in Interact.</li>
-          </ol>
-        </details>
-      </div>
-
-      <div class="panel">
-        <h2>OBS plugin (native transition)</h2>
+            <div class="panel" style="margin-top:16px">
+        <h2>Save as OBS transition</h2>
         <div class="row"><label>Transition name</label>
           <input type="text" id="obsname" spellcheck="false" maxlength="40" placeholder="e.g. Cyber Iris"></div>
         <div class="btns"><button class="play" id="obsSave" disabled>Save as OBS transition</button><span class="hint" id="obsState"></span></div>
@@ -173,37 +157,6 @@ button:disabled{opacity:.45;cursor:not-allowed}
         </details>
       </div>
 
-      <div class="panel">
-        <h2>Render to .webm (OBS Stinger)</h2>
-        <div class="row"><label>ffmpeg path (blank if plain "ffmpeg" works in your terminal)</label>
-          <input type="text" id="ffpath" spellcheck="false"></div>
-        <div class="row"><label>Frame rate</label>
-          <select id="fps">
-            <option value="24">24 fps (cinematic)</option>
-            <option value="30">30 fps</option>
-            <option value="60">60 fps (smoothest)</option>
-          </select></div>
-        <div class="row"><label>Output file name (.webm or .mov)</label>
-          <input type="text" id="outname" spellcheck="false"></div>
-        <div class="btns"><button class="play" id="exportBtn" disabled>Export video</button><button id="cancelBtn" hidden>Cancel</button><span class="hint" id="exportState"></span></div>
-        <div class="prog" id="prog" hidden><div id="progBar"></div></div>
-        <pre id="log" hidden></pre>
-        <p class="hint" id="srvNote"></p>
-        <p class="hint" id="tp"></p>
-        <div class="sub">Or run it yourself in a terminal:</div>
-        <textarea id="cmd" readonly></textarea>
-        <div class="btns"><button id="copycmd">Copy command</button><span class="hint" id="copied2"></span></div>
-        <details>
-          <summary>One-time setup</summary>
-          <ol>
-            <li>Install <b>Node.js</b> and <b>ffmpeg</b> (ffmpeg must be on your PATH).</li>
-            <li>In the folder with this file, run <code>npm init -y</code>, <code>npm i playwright</code>, then <code>npx playwright install chromium</code>.</li>
-            <li>One-click video export is not part of the built-in plugin. Use the native OBS transitions instead.</li>
-            <li>Export renders every frame with a transparent background and encodes a VP9 .webm with alpha. End the output name in <code>.mov</code> for ProRes 4444 instead.</li>
-            <li>In OBS: Scene Transitions &gt; + &gt; Stinger &gt; pick the file, and set the Transition Point to the midpoint shown above.</li>
-          </ol>
-        </details>
-      </div>
     </section>
   </main>
 </div>
@@ -213,7 +166,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 'use strict';
 
 /* ---------- defaults, presets, easing ---------- */
-const DEF={t:'iris',d:1400,h:300,n:10,e:'smooth',c1:'#8b5cf6',c2:'#22d3ee',c3:'#0b0b12',mode:'reveal',logo:'',text:'LOVE THY NERD',tc:'#ffffff',font:'heavy',sw:4,ts:1,stg:50,sc:1,ang:-12};
+const DEF={t:'iris',d:1400,h:300,n:10,e:'smooth',c1:'#8b5cf6',c2:'#22d3ee',c3:'#0b0b12',mode:'full',logo:'',text:'LOVE THY NERD',tc:'#ffffff',font:'heavy',sw:4,ts:1,stg:50,sc:1,ang:-12};
 const PRESETS={
   'Nerd Purple':['#8b5cf6','#22d3ee','#0b0b12'],
   'Player One':['#ef4444','#3b82f6','#111827'],
@@ -817,7 +770,7 @@ function parseOpts(search){
   if(q.has('n'))o.n=clamp(Math.round(+q.get('n')||DEF.n),3,24);
   if(q.has('e')&&EASE[q.get('e')])o.e=q.get('e');
   ['c1','c2','c3','tc'].forEach(k=>{if(q.has(k))o[k]=hex(q.get(k),DEF[k])});
-  if(q.has('mode')&&/^(reveal|full)$/.test(q.get('mode')))o.mode=q.get('mode');
+  o.mode='full';
   if(q.has('font')&&FONTS[q.get('font')])o.font=q.get('font');
   if(q.has('sw'))o.sw=clamp(+q.get('sw')||DEF.sw,1,20);
   if(q.has('ts'))o.ts=clamp(+q.get('ts')||DEF.ts,.5,4);
@@ -839,38 +792,10 @@ if(new URLSearchParams(location.search).has('t')){
   let last=0;
   const ready=preloadLogo(O.logo);
   const go=()=>{const n=performance.now();if(n-last<500)return;last=n;ready.then(()=>run(stage,O))};
-  const loopOn=new URLSearchParams(location.search).get('loop')==='1';
-  if(new URLSearchParams(location.search).has('render')){
-    window.__forgeRender={
-      prepare(){
-        return preloadLogo(O.logo).then(()=>{
-        run(stage,Object.assign({},O,{mode:'full'}),{paused:true});
-        const imgs=[...stage.querySelectorAll('img')];
-        return Promise.all(imgs.map(i=>Promise.race([i.decode().catch(()=>console.warn('Logo failed to load: '+i.src)),new Promise(r=>setTimeout(r,8000))]))).then(()=>({d:O.d,mid:O.d/2}));
-        });
-      },
-      seek(ms){stage.getAnimations({subtree:true}).forEach(a=>{a.currentTime=ms});}
-    };
-    return;
-  }
-  if(new URLSearchParams(location.search).get('ctl')==='obs'){
-    // Driven by the Forge OBS plugin: stay idle (fully transparent) until OBS makes this source active.
-    O.mode='full';
-    window.addEventListener('obsSourceActiveChanged',e=>{if(e.detail&&e.detail.active)go()});
-    window.addEventListener('obsSourceVisibleChanged',e=>{if(e.detail&&e.detail.visible)go()});
-    window.forgePlay=()=>{last=0;go()};
-    return;
-  }
-  const go2=()=>{
-    go();
-    if(loopOn)setTimeout(()=>{last=0;go2()},O.d+900);
-  };
-  window.addEventListener('obsSourceVisibleChanged',e=>{if(e.detail&&e.detail.visible)go()});
+  // Driven by the OBS CSS Stinger Forge plugin: stay idle (fully transparent) until OBS makes this source active.
   window.addEventListener('obsSourceActiveChanged',e=>{if(e.detail&&e.detail.active)go()});
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)go()});
-  document.addEventListener('click',()=>{last=0;go()});
-  document.addEventListener('keydown',()=>{last=0;go()});
-  go2();
+  window.addEventListener('obsSourceVisibleChanged',e=>{if(e.detail&&e.detail.visible)go()});
+  window.forgePlay=()=>{last=0;go()};
   return;
 }
 
@@ -894,41 +819,82 @@ Object.keys(groups).forEach(g=>{
   });
 });
 
-// presets
+let SRV=null;
+const srvHeaders=x=>Object.assign({'X-Forge':'1'},x||{});
+// palettes (built-in + saved; saved ones live in the plugin's config folder)
 const presetSel=$('preset');
-['Custom'].concat(Object.keys(PRESETS)).forEach(n=>{const op=document.createElement('option');op.value=op.textContent=n;presetSel.appendChild(op)});
+let savedPal={};
+const hex6=v=>/^#[0-9a-f]{6}$/i.test(v||'');
+function fillPalettes(sel){
+  presetSel.textContent='';
+  const add=(v,l)=>{const op=document.createElement('option');op.value=v;op.textContent=l;presetSel.appendChild(op)};
+  add('Custom','Custom');
+  Object.keys(PRESETS).forEach(n=>add('b:'+n,n));
+  Object.keys(savedPal).forEach(n=>add('s:'+n,n+' (saved)'));
+  presetSel.value=Array.from(presetSel.options).some(o=>o.value===sel)?sel:'Custom';
+  updatePalUI();
+}
+function palColors(v){return v.startsWith('b:')?PRESETS[v.slice(2)]:v.startsWith('s:')?savedPal[v.slice(2)]:null}
+function updatePalUI(){
+  $('palSave').disabled=!SRV||!$('palname').value.trim();
+  $('palDel').hidden=!presetSel.value.startsWith('s:');
+  $('palHint').textContent=SRV?'':'Open this page from OBS (Tools > OBS CSS Stinger Forge) to save palettes.';
+}
+async function loadPalettes(){
+  try{
+    const r=await fetch('/api/palettes',{headers:srvHeaders()});if(!r.ok)return;
+    const j=await r.json(),src=j.palettes||{};
+    savedPal={};
+    Object.keys(src).forEach(n=>{const a=src[n];if(Array.isArray(a)&&a.length===3&&a.every(hex6))savedPal[n]=a});
+    fillPalettes(presetSel.value);
+  }catch(e){}
+}
+async function storePalettes(){
+  const r=await fetch('/api/palettes',{method:'POST',headers:srvHeaders({'Content-Type':'application/json'}),body:JSON.stringify({palettes:savedPal})});
+  if(!r.ok)throw new Error('Server error '+r.status);
+}
 presetSel.onchange=()=>{
-  const p=PRESETS[presetSel.value];if(!p)return;
-  S.c1=p[0];S.c2=p[1];S.c3=p[2];sync();play();
+  const p=palColors(presetSel.value);
+  if(p){S.c1=p[0];S.c2=p[1];S.c3=p[2];sync();play()}
+  updatePalUI();
 };
+$('palname').addEventListener('input',updatePalUI);
+$('palSave').onclick=async()=>{
+  const n=$('palname').value.trim().slice(0,30);if(!SRV||!n)return;
+  savedPal[n]=[S.c1,S.c2,S.c3].map(c=>String(c).toLowerCase());
+  try{await storePalettes();$('palHint').textContent='Saved palette “'+n+'”.';$('palname').value='';fillPalettes('s:'+n)}
+  catch(e){$('palHint').textContent='Could not save the palette: '+e.message}
+};
+$('palDel').onclick=async()=>{
+  const n=presetSel.value.slice(2);delete savedPal[n];
+  try{await storePalettes();$('palHint').textContent='Deleted “'+n+'”.';fillPalettes('Custom')}
+  catch(e){$('palHint').textContent='Could not delete the palette: '+e.message}
+};
+fillPalettes('Custom');
 
-const keys=['d','h','n','e','mode','font','sw','ts','stg','sc','ang','c1','c2','c3','logo','text','tc'];
+const keys=['d','h','n','e','font','sw','ts','stg','sc','ang','c1','c2','c3','logo','text','tc'];
 keys.forEach(k=>{
   const el=$(k);
   el.addEventListener('input',()=>{
     S[k]=(el.type==='range')?+el.value:el.value;
     if(k==='logo'){logoBlob='';logoSaved=''}
-    if(/^c[123]$/.test(k))presetSel.value='Custom';
+    if(/^c[123]$/.test(k)){presetSel.value='Custom';updatePalUI()}
     sync(true);
   });
   el.addEventListener('change',()=>play());
 });
 
-let SRV=null;
-const srvHeaders=x=>Object.assign({'X-Forge':'1'},x||{});
-function pageBase(){return SRV?SRV.fileUrl:location.href.split('#')[0].split('?')[0]}
 function buildQuery(){
   const p=new URLSearchParams();
   p.set('t',S.t);
-  ['d','h','n','e','mode','font','sw','ts','stg','sc','ang'].forEach(k=>p.set(k,S[k]));
+  ['d','h','n','e','font','sw','ts','stg','sc','ang'].forEach(k=>p.set(k,S[k]));
   ['c1','c2','c3'].forEach(k=>p.set(k,S[k].replace('#','')));
   p.set('tc',S.tc.replace('#',''));
   p.set('text',S.text);
   if(S.logo)p.set('logo',S.logo);
   return '?'+p.toString();
 }
-function buildURL(){return pageBase()+buildQuery()}
-let logoBlob='',logoSaved='',exporting=false,abortCtl=null;
+let logoBlob='',logoSaved='';
 function updateLogoUI(){
   const src=logoBlob||(S.logo?imgSrc(S.logo):'');
   const th=$('logoThumb');
@@ -937,10 +903,9 @@ function updateLogoUI(){
   $('logoClear').hidden=!S.logo;
   let h='You can also drop an image onto the preview.';
   if(logoSaved){
-    h='Saved \u201c'+logoSaved+'\u201d into your Forge folder'+(SRV?' ('+SRV.root+')':'')+'.';
+    h='Saved \u201c'+logoSaved+'\u201d for use in OBS.';
   }else if(logoBlob){
-    const dir=SRV?SRV.root:(location.protocol==='file:'?decodeURI(pageBase()).replace(/[^\/]*$/,'').replace(/^file:\/\/\//,''):'');
-    h='Copy \u201c'+S.logo+'\u201d into the same folder as this page'+(dir?' ('+dir+')':'')+' so OBS and the renderer can find it. Open this page from OBS (Tools > OBS CSS Stinger Forge) and I will save it there for you.';
+    h='Open this page from OBS (Tools > OBS CSS Stinger Forge) so the logo can be saved for OBS to use.';
   }
   if(/\.svg$/i.test(S.logo||'')&&!SRV)h+=' For true stroked/filled SVG rows in OBS, open this page from OBS (Tools > OBS CSS Stinger Forge) so the SVG gets prepared.';
   $('logoHint').textContent=h;
@@ -977,14 +942,7 @@ function sync(fromInput){
   $('o_ang').textContent=S.ang+'\u00b0';
   $('rowAng').hidden=!TR[S.t].angle;
   $('rowSc').hidden=!TR[S.t].scroll;
-  const u=buildURL();
-  $('url').value=u;
   updateLogoUI();
-  $('open').href=u;
-  const ffp=$('ffpath').value.trim();
-  const fps=+$('fps').value||30,outn=$('outname').value.trim()||'ltn-stinger.webm';
-  $('cmd').value='node render-stinger.mjs "'+u+'" --fps '+fps+' --out "'+outn.replace(/"/g,'')+'"'+(ffp?' --ffmpeg "'+ffp.replace(/"/g,'')+'"':'');
-  $('tp').textContent='Transition Point for OBS: '+Math.round(S.d/2)+' ms (frame '+Math.round(fps*S.d/2000)+' at '+fps+' fps).';
 }
 
 let loopTimer=0;
@@ -1010,73 +968,6 @@ const pvEl=$('pv');
 pvEl.addEventListener('drop',e=>pickLogo(e.dataTransfer.files[0]));
 $('play').onclick=play;
 $('loop').onchange=()=>{if($('loop').checked)play();else clearTimeout(loopTimer)};
-$('copy').onclick=()=>{
-  const ta=$('url');
-  const done=()=>{$('copied').textContent='Copied!';setTimeout(()=>$('copied').textContent='',1600)};
-  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(done,()=>{ta.select();document.execCommand('copy');done()})}
-  else{ta.select();document.execCommand('copy');done()}
-};
-
-$('copycmd').onclick=()=>{
-  const ta=$('cmd');
-  const done=()=>{$('copied2').textContent='Copied!';setTimeout(()=>$('copied2').textContent='',1600)};
-  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(done,()=>{ta.select();document.execCommand('copy');done()})}
-  else{ta.select();document.execCommand('copy');done()}
-};
-const FF_KEY='forge.ffpath',FF_DEFAULT='';
-let ffSaved=null;try{ffSaved=localStorage.getItem(FF_KEY)}catch(e){}
-$('ffpath').value=ffSaved!==null?ffSaved:FF_DEFAULT;
-$('ffpath').addEventListener('input',()=>{try{localStorage.setItem(FF_KEY,$('ffpath').value)}catch(e){}sync(true)});
-const FPS_KEY='forge.fps',OUT_KEY='forge.out';
-let fpsSaved=null,outSaved=null;try{fpsSaved=localStorage.getItem(FPS_KEY);outSaved=localStorage.getItem(OUT_KEY)}catch(e){}
-$('fps').value=['24','30','60'].includes(fpsSaved)?fpsSaved:'30';
-$('outname').value=outSaved||'ltn-stinger.webm';
-$('fps').addEventListener('change',()=>{try{localStorage.setItem(FPS_KEY,$('fps').value)}catch(e){}sync(true)});
-$('outname').addEventListener('input',()=>{try{localStorage.setItem(OUT_KEY,$('outname').value)}catch(e){}sync(true)});
-
-function updateServerUI(){
-  $('exportBtn').disabled=!SRV||exporting;
-  const n=$('srvNote');
-  if(SRV)n.textContent='Helper connected. Videos and logos are saved in '+SRV.root;
-  else n.innerHTML='One-click video export is not part of the built-in version. Use the native OBS transitions instead (Scene Transitions > + > Forge: ...).';
-}
-async function doExport(){
-  if(!SRV||exporting)return;
-  exporting=true;updateServerUI();
-  const log=$('log'),bar=$('progBar'),state=$('exportState');
-  log.hidden=false;log.textContent='';$('prog').hidden=false;bar.style.width='0%';
-  $('cancelBtn').hidden=false;state.textContent='Starting\u2026';
-  abortCtl=new AbortController();
-  let exit=null,outPath='',buf='';
-  const handle=line=>{
-    let m;
-    if((m=/^__EXIT__:(\d+)/.exec(line)))exit=+m[1];
-    else if((m=/^__OUT__:(.*)/.exec(line)))outPath=m[1];
-    else if((m=/frame (\d+)\/(\d+)/.exec(line))){bar.style.width=(100*m[1]/m[2])+'%';state.textContent='Rendering frame '+m[1]+' of '+m[2]}
-    else if(line.trim()){log.textContent+=line+'\n';log.scrollTop=log.scrollHeight}
-  };
-  try{
-    const r=await fetch('/api/render',{method:'POST',signal:abortCtl.signal,headers:srvHeaders({'Content-Type':'application/json'}),
-      body:JSON.stringify({query:buildQuery(),fps:+$('fps').value,out:$('outname').value.trim(),ffmpeg:$('ffpath').value.trim()})});
-    if(!r.ok){const j=await r.json().catch(()=>({}));throw new Error(j.error||('Server error '+r.status))}
-    const rd=r.body.getReader(),dec=new TextDecoder();
-    for(;;){
-      const x=await rd.read();if(x.done)break;
-      buf+=dec.decode(x.value,{stream:true});
-      const parts=buf.split(/[\r\n]+/);buf=parts.pop();parts.forEach(handle);
-    }
-    if(buf)handle(buf);
-    if(exit===0){bar.style.width='100%';state.textContent='Done. Saved '+outPath;}
-    else state.textContent='Export failed. See the log above.';
-  }catch(e){
-    state.textContent=e.name==='AbortError'?'Cancelled.':'Export failed: '+e.message;
-  }finally{
-    exporting=false;abortCtl=null;$('cancelBtn').hidden=true;updateServerUI();
-  }
-}
-$('exportBtn').onclick=doExport;
-$('cancelBtn').onclick=()=>{if(abortCtl)abortCtl.abort()};
-
 /* ---------- OBS plugin presets ---------- */
 const OBS_KEY='forge.obsname';
 function slugify(n){return n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,50)}
@@ -1115,10 +1006,9 @@ try{$('obsname').value=localStorage.getItem(OBS_KEY)||''}catch(e){}
 $('obsname').addEventListener('input',updateObsUI);
 $('obsSave').onclick=saveObs;
 if(/^https?:$/.test(location.protocol)){
-  fetch('/api/ping',{headers:srvHeaders()}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.ok){SRV=j;sync(true);loadPresets()}updateServerUI();updateObsUI()}).catch(()=>{updateServerUI();updateObsUI()});
+  fetch('/api/ping',{headers:srvHeaders()}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.ok){SRV=j;sync(true);loadPresets();loadPalettes()}updateObsUI()}).catch(()=>{updateObsUI()});
 }
 updateObsUI();
-updateServerUI();
 sync();
 setTimeout(play,250);
 window.__forge={run,TR,S,stage};

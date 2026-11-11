@@ -19,7 +19,7 @@ Requires OBS 31 or newer (64-bit) with the built-in Browser source.
 
 **Ready-made transitions:** in OBS open **Scene Transitions**, press **+**, and choose **Forge: Iris** (or any other `Forge:` entry). Pick it from the dropdown whenever you want it.
 
-**Your own:** choose **Tools > OBS CSS Stinger Forge...** (or the *Open the designer* button in a Forge transition's properties). The designer opens in your browser. Design a transition, name it, press **Save as OBS transition**, then add it with **+** in Scene Transitions as **Forge: your name**. OBS has no public API for a plugin to add transitions to the dropdown itself, so each one is added once with the + button.
+**Your own:** choose **Tools > OBS CSS Stinger Forge...** (or the *Open the designer* button in a Forge transition's properties). The designer opens in your browser. Design a transition (colors can be saved as your own palettes), name it, press **Save as OBS transition**, then add it with **+** in Scene Transitions as **Forge: your name**. OBS has no public API for a plugin to add transitions to the dropdown itself, so each one is added once with the + button.
 
 The designer runs from inside OBS, so OBS must be open to use it. Saved and ready-made transitions work without it.
 
@@ -27,7 +27,7 @@ The designer runs from inside OBS, so OBS must be open to use it. Saved and read
 
 * Sync offset (transition properties): the overlay starts a frame or two after the cut logic. Adjust if the scene change feels early or late (default 60 ms).
 * Studio Mode T-bar does not drive the animation (it is time-based).
-* Video (stinger) export from v0.1.0 was removed; the native transitions replace it.
+* Transitions are added only through OBS (Scene Transitions > +). There is no browser-source URL or video export.
 * Windows only for now, and not yet tested on every OBS release. Please open an issue with your OBS log if something fails.
 
 ## Build from source
