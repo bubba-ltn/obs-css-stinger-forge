@@ -12,7 +12,10 @@ body{background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-syste
 body.player{background:transparent;overflow:hidden}
 .stage{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 body.player .stage{position:fixed}
-header{padding:20px 24px 4px}
+header{padding:20px 24px 4px;display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap}
+.discord{display:inline-flex;align-items:center;gap:9px;background:#5865f2;color:#fff;text-decoration:none;font-weight:600;border-radius:8px;padding:9px 16px;white-space:nowrap}
+.discord:hover{filter:brightness(1.1)}
+.discord svg{width:20px;height:20px;fill:currentColor;flex:none}
 header h1{margin:0;font-size:22px;letter-spacing:.02em}
 header p{margin:4px 0 0;color:var(--mute)}
 main{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:20px;padding:16px 24px 32px;align-items:start}
@@ -69,8 +72,14 @@ button:disabled{opacity:.45;cursor:not-allowed}
 <body>
 <div id="app">
   <header>
-    <h1>OBS CSS Stinger Forge</h1>
-    <p>Design a transition, then save it as a native OBS transition.</p>
+    <div>
+      <h1>OBS CSS Stinger Forge</h1>
+      <p>Design a transition, then save it as a native OBS transition.</p>
+    </div>
+    <a class="discord" href="https://www.lovethynerd.com/discord" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189z"/></svg>
+      Join our Discord
+    </a>
   </header>
   <main>
     <section class="panel">
@@ -123,7 +132,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
         <input type="text" id="logo" placeholder="…or type a file name, path or URL">
         <div class="hint" id="logoHint">You can also drop an image onto the preview.</div>
       </div>
-      <div class="row"><label>Center text (optional)</label><input type="text" id="text" placeholder="LOVE THY NERD"></div>
+      <div class="row"><label>Center text (optional)</label><input type="text" id="text" placeholder="Type text here"></div>
       <div class="row"><label>Text color</label><input type="color" id="tc" style="height:36px;padding:2px;width:100%;border-radius:8px;border:1px solid var(--line);background:#0f1120"></div>
       <div class="row" id="rowLc" hidden><label>Logo stroke color</label><input type="color" id="lc" style="height:36px;padding:2px;width:100%;border-radius:8px;border:1px solid var(--line);background:#0f1120"></div>
     </section>
@@ -167,7 +176,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 'use strict';
 
 /* ---------- defaults, presets, easing ---------- */
-const DEF={t:'iris',d:1400,h:300,n:10,e:'smooth',c1:'#8b5cf6',c2:'#22d3ee',c3:'#0b0b12',mode:'full',logo:'',text:'LOVE THY NERD',tc:'#ffffff',lc:'#ffffff',font:'heavy',sw:4,ts:1,stg:50,sc:1,ang:-12};
+const DEF={t:'iris',d:1400,h:300,n:10,e:'smooth',c1:'#8b5cf6',c2:'#22d3ee',c3:'#0b0b12',mode:'full',logo:'',text:'',tc:'#ffffff',lc:'#ffffff',font:'heavy',sw:4,ts:1,stg:50,sc:1,ang:-12};
 const PRESETS={
   'Nerd Purple':['#8b5cf6','#22d3ee','#0b0b12'],
   'Player One':['#ef4444','#3b82f6','#111827'],
@@ -689,7 +698,7 @@ function run(stage,o,hooks){
   const play=(el,kf)=>{const a=el.animate(kf,{duration:d,fill:'both'});a.currentTime=startAt;if(hooks.paused)a.pause();return a};
   const f=x=>clamp(x/d,0,1);
   const font=FONTS[o.font]||FONTS.heavy;
-  const c={W,H,o,M,u,hd,d,cols:[o.c1,o.c2,o.c3],stage,font,txt:o.text||'LOVE THY NERD',sw:Math.max(1,o.sw*H/1080),
+  const c={W,H,o,M,u,hd,d,cols:[o.c1,o.c2,o.c3],stage,font,txt:o.text||'',sw:Math.max(1,o.sw*H/1080),
     el(css){const e=document.createElement('div');e.style.cssText='position:absolute;'+css;stage.appendChild(e);return e},
     raw(el,kf){return play(el,kf)},
     IO(el,ins,hold,outs,q){
