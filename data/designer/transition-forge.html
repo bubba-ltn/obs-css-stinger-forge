@@ -13,6 +13,11 @@ body.player{background:transparent;overflow:hidden}
 .stage{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 body.player .stage{position:fixed}
 header{padding:20px 24px 4px;display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap}
+footer{display:flex;justify-content:center;padding:8px 24px 28px}
+footer a{display:inline-flex;align-items:center;justify-content:center;gap:9px;color:var(--mute);text-decoration:none;font-size:13px}
+footer a:hover{color:var(--ink)}
+footer svg{height:24px;width:24px;flex:none}
+.row label span{display:inline}
 .discord{display:inline-flex;align-items:center;gap:9px;background:#5865f2;color:#fff;text-decoration:none;font-weight:600;border-radius:8px;padding:9px 16px;white-space:nowrap}
 .discord:hover{filter:brightness(1.1)}
 .discord svg{width:20px;height:20px;fill:currentColor;flex:none}
@@ -105,6 +110,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
         <h2>Text</h2>
         <div class="row"><label>Text speed <output id="o_ts"></output></label><input type="range" id="ts" min="0.5" max="4" step="0.1"></div>
         <div class="row"><label>Stagger <output id="o_stg"></output></label><input type="range" id="stg" min="0" max="100" step="5"></div>
+        <div class="row"><label><span>Show logo on text transitions</span><input type="checkbox" id="sl"></label></div>
         <div class="row"><label>Font</label>
           <select id="font">
             <option value="heavy">Heavy italic</option>
@@ -169,6 +175,13 @@ button:disabled{opacity:.45;cursor:not-allowed}
 
     </section>
   </main>
+  <footer>
+    <a href="https://www.lovethynerd.com/about" target="_blank" rel="noopener noreferrer">
+      <span>Powered by</span>
+      <svg viewBox="0 0 149 149" role="img" aria-label="Love Thy Nerd logo"><defs><linearGradient id="ltnGrad" x1="74.5" y1="1.1" x2="74.5" y2="150.1" gradientTransform="translate(0 151) scale(1 -1)" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#28aae1"/><stop offset="1" stop-color="#e80a89"/></linearGradient></defs><path fill="url(#ltnGrad)" d="M59.2,149C10,149,0,139,0,89.8v-30.6C0,10,10,0,59.2,0h30.6c49.2,0,59.2,10,59.2,59.2v30.6c0,49.2-10,59.2-59.2,59.2h-30.6Z"/><path fill="#fff" d="M94.65,44.45h-23.3c-1.6,0-2.9,1.3-2.9,2.9v48.5c0,1.1-.7,1.9-1.7,1.9h-11.6c-1,0-1.8-.8-1.8-1.9v-48.5c0-1.6-1.3-2.9-2.9-2.9h-17.6c-1,0-1.8-.8-1.8-1.9v-10.6c0-1,.8-1.7,1.7-1.7h61.8c1.1,0,1.9.7,1.9,1.7v10.6c0,1-.8,1.9-1.9,1.9h.1Z"/><path fill="#fff" d="M68.35,106.15v10.7c0,1.1-.7,1.9-1.8,1.9h-33.8c-1,0-1.8-.8-1.8-1.9v-63.9c0-1,.8-1.7,1.7-1.7h11.4c1,0,1.8.8,1.8,1.8v48.2c0,1.7,1.4,3,3,3h17.6c.5,0,1.8.2,1.8,1.9h.1Z"/><path fill="#fff" d="M118.05,31.95v84.9c0,1.1-.7,1.9-1.8,1.9h-11.2c-.6,0-1.2-.4-1.6-1.1l-10.7-24c-.5-1.1-2.2-.8-2.2.5v22.8c0,1.1-.7,1.9-1.8,1.9h-11.4c-1,0-1.8-.8-1.8-1.9v-63.9c0-1,.8-1.7,1.7-1.7h11.8c.6,0,1.2.4,1.5.9h0l10,23.1c.5,1.1,2.2.8,2.2-.5V31.85c0-1,.8-1.7,1.7-1.7h11.5c1,0,1.8.8,1.8,1.8h.3Z"/></svg>
+      <span>Love Thy Nerd</span>
+    </a>
+  </footer>
 </div>
 
 <script>
@@ -176,7 +189,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 'use strict';
 
 /* ---------- defaults, presets, easing ---------- */
-const DEF={t:'iris',d:1400,h:300,n:10,e:'smooth',c1:'#8b5cf6',c2:'#22d3ee',c3:'#0b0b12',mode:'full',logo:'',text:'',tc:'#ffffff',lc:'#ffffff',font:'heavy',sw:4,ts:1,stg:50,sc:1,ang:-12};
+const DEF={t:'iris',d:1400,h:300,n:10,e:'smooth',c1:'#8b5cf6',c2:'#22d3ee',c3:'#0b0b12',mode:'full',logo:'',text:'',tc:'#ffffff',lc:'#ffffff',sl:1,font:'heavy',sw:4,ts:1,stg:50,sc:1,ang:-12};
 const PRESETS={
   'LTN':['#e80b8c','#40b3ff','#875ab5'],
   'Nerd Purple':['#8b5cf6','#22d3ee','#0b0b12'],
@@ -424,18 +437,19 @@ T('tx-marquee','Stroked text','Marquee Rows',{text:1,scroll:1,build(c){
 
 T('tx-zoom','Stroked text','Zoom Focus',{text:1,build(c){
   bgSweep(c,'line');
-  const S=fitS(c,.66,.3),m=6;
+  // Kept light on purpose: few layers, modest scale and no animated blur, so it stays smooth at 60 fps.
+  const S=fitS(c,.66,.3),m=3;
   for(let j=m;j>=1;j--){
-    const w=centered(c),t=(j-1)/(m-1);
+    const w=centered(c,'will-change:transform,opacity;'),t=(j-1)/(m-1);
     mkSpan(w,c.txt,sty(c,S,j%2?'out':'out2'));
-    c.IO(w,[{p:0,transform:'scale('+(3+j*1.3)+')',opacity:0,filter:BLUR}],
-      {transform:'scale('+(1+j*.07)+')',opacity:.8-j*.1,filter:NOBLUR},
-      [{p:1,transform:'scale('+(6+j)+')',opacity:0,filter:BLUR}],
+    c.IO(w,[{p:0,transform:'scale('+(2+j*.6)+')',opacity:0}],
+      {transform:'scale('+(1+j*.09)+')',opacity:.75-j*.15},
+      [{p:1,transform:'scale('+(3+j*.5)+')',opacity:0}],
       {ia:.3,ib:1,oa:0,ob:.75,si:1-t,so:t,win:.5});
   }
-  const main=centered(c);mkSpan(main,c.txt,sty(c,S,'fill'));
-  c.IO(main,[{p:0,transform:'scale(4)',opacity:0,filter:BLUR}],{transform:'scale(1)',opacity:1,filter:NOBLUR},
-    [{p:1,transform:'scale(8)',opacity:0,filter:BLUR}],{ia:.35,ib:1,oa:0,ob:.7});
+  const main=centered(c,'will-change:transform,opacity;');mkSpan(main,c.txt,sty(c,S,'fill'));
+  c.IO(main,[{p:0,transform:'scale(2.4)',opacity:0}],{transform:'scale(1)',opacity:1},
+    [{p:1,transform:'scale(3.6)',opacity:0}],{ia:.35,ib:1,oa:0,ob:.7});
 }});
 
 T('tx-split','Stroked text','Split Slide',{text:1,build(c){
@@ -738,7 +752,7 @@ function run(stage,o,hooks){
   spec.build(c);
 
   if(spec.text){
-    if(o.logo){
+    if(o.logo&&o.sl){
       const L=c.el('left:0;width:100%;bottom:'+(H*.06)+'px;height:'+(H*.16)+'px;display:flex;align-items:center;justify-content:center;');
       const img=document.createElement('img');
       img.src=imgSrc(o.logo);
@@ -788,6 +802,7 @@ function parseOpts(search){
   if(q.has('stg'))o.stg=clamp(isNaN(+q.get('stg'))?DEF.stg:+q.get('stg'),0,100);
   if(q.has('sc'))o.sc=clamp(+q.get('sc')||DEF.sc,.25,4);
   if(q.has('ang'))o.ang=clamp(isNaN(+q.get('ang'))?DEF.ang:+q.get('ang'),-60,60);
+  if(q.has('sl'))o.sl=q.get('sl')==='0'?0:1;
   if(q.has('logo'))o.logo=q.get('logo');
   if(q.has('text'))o.text=q.get('text');
   return o;
@@ -900,6 +915,7 @@ function buildQuery(){
   p.set('t',S.t);
   ['d','h','n','e','font','sw','ts','stg','sc','ang'].forEach(k=>p.set(k,S[k]));
   ['c1','c2','c3'].forEach(k=>p.set(k,S[k].replace('#','')));
+  p.set('sl',S.sl?1:0);
   p.set('tc',S.tc.replace('#',''));
   p.set('lc',S.lc.replace('#',''));
   p.set('text',S.text);
@@ -955,9 +971,11 @@ function sync(fromInput){
   $('rowAng').hidden=!TR[S.t].angle;
   $('rowSc').hidden=!TR[S.t].scroll;
   $('rowLc').hidden=!TR[S.t].scroll;
+  $('sl').checked=!!S.sl;
   updateLogoUI();
 }
 
+$('sl').addEventListener('change',()=>{S.sl=$('sl').checked?1:0;play()});
 let loopTimer=0;
 function play(){
   clearTimeout(loopTimer);
