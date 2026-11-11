@@ -2,7 +2,7 @@
 ; Built in CI (see .github/workflows/build-project.yaml). Expects:
 ;   installer\stage\plugin\forge-transitions\...   (the built OBS plugin, designer page included)
 #ifndef AppVersion
-  #define AppVersion "0.3.3"
+  #define AppVersion "0.3.4"
 #endif
 
 [Setup]
