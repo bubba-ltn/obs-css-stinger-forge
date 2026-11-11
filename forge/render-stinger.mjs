@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Renders a Transition Forge transition to a transparent video for OBS's Stinger transition.
+// Renders a OBS CSS Stinger Forge transition to a transparent video for OBS's Stinger transition.
 // Usage: node render-stinger.mjs "<forge URL>" [--fps 30] [--width 1920] [--height 1080] [--crf 24] [--out ltn-stinger.webm]
 // An output name ending in .mov is encoded as ProRes 4444 instead of VP9 alpha WebM.
 import { chromium } from 'playwright';

@@ -140,8 +140,8 @@ jobs:
       - name: Upload Installer 📡
         uses: actions/upload-artifact@v4
         with:
-          name: TransitionForge-Setup
-          path: ${{ github.workspace }}/release/TransitionForge-Setup-*.exe
+          name: OBS-CSS-Stinger-Forge-Setup
+          path: ${{ github.workspace }}/release/OBS-CSS-Stinger-Forge-Setup-*.exe
 
       - name: Upload Artifacts 📡
         uses: actions/upload-artifact@v4

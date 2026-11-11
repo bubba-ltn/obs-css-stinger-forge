@@ -1,5 +1,5 @@
 /*
-Forge Transitions for OBS
+OBS CSS Stinger Forge for OBS
 Copyright (C) 2026 Love Thy Nerd
 
 This program is free software; you can redistribute it and/or modify
@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-// Each preset saved by Transition Forge (a small .json file in
+// Each preset saved by OBS CSS Stinger Forge (a small .json file in
 //   <OBS config>/plugin_config/forge-transitions/presets/)
 // becomes its own transition type, "Forge: <name>". When the transition runs it
 //   1. plays the Forge page (CSS animation, transparent background) in a private
@@ -211,7 +211,7 @@ obs_properties_t *forge_properties(void *data, void *type_data)
 	if (data)
 		obs_properties_add_button2(p, "reload", "Reload overlay page", forge_reload_clicked, data);
 	obs_properties_add_text(p, "info",
-				"Edit the look in Transition Forge (Save as OBS transition). The animation length is set by the preset.",
+				"Edit the look in OBS CSS Stinger Forge (Save as OBS transition). The animation length is set by the preset.",
 				OBS_TEXT_INFO);
 	return p;
 }
@@ -450,7 +450,7 @@ bool obs_module_load(void)
 	scan_presets();
 	g_stop = false;
 	g_watcher = std::thread(watcher_main);
-	obs_log(LOG_INFO, "Forge Transitions loaded (version %s), presets folder: %s", PLUGIN_VERSION,
+	obs_log(LOG_INFO, "OBS CSS Stinger Forge loaded (version %s), presets folder: %s", PLUGIN_VERSION,
 		g_presets_dir.c_str());
 	return true;
 }
@@ -461,5 +461,5 @@ void obs_module_unload(void)
 	g_stop = true;
 	if (g_watcher.joinable())
 		g_watcher.join();
-	obs_log(LOG_INFO, "Forge Transitions unloaded");
+	obs_log(LOG_INFO, "OBS CSS Stinger Forge unloaded");
 }

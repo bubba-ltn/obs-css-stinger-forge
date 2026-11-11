@@ -1,25 +1,25 @@
-# Transition Forge for OBS
+# OBS CSS Stinger Forge
 
 Design animated scene transitions in your browser, then use them in OBS as **native transitions**. No video files, no stinger.
 Built by [Love Thy Nerd](https://lovethynerd.com).
 
 Two parts:
 
-* **Transition Forge** (`forge/`): a single-page designer with about 40 CSS/WAAPI transitions (wipes, shapes, themed, minimal, stroked text, tiled logos). It can also render a transparent `.webm`/`.mov` for OBS's Stinger transition.
-* **Forge Transitions plugin** (`src/`): an OBS plugin. Every preset you save in the Forge shows up in OBS as `Forge: <name>`.
+* **OBS CSS Stinger Forge** (`forge/`): a single-page designer with about 40 CSS/WAAPI transitions (wipes, shapes, themed, minimal, stroked text, tiled logos). It can also render a transparent `.webm`/`.mov` for OBS's Stinger transition.
+* **OBS CSS Stinger Forge plugin** (`src/`): an OBS plugin. Every preset you save in the Forge shows up in OBS as `Forge: <name>`.
 
 ## Install (Windows)
 
-1. Download **`TransitionForge-Setup-x.y.z.exe`** from the [latest release](../../releases/latest).
-2. Close OBS, run the installer. It installs the plugin to `%ProgramData%\obs-studio\plugins\forge-transitions` and the designer to `%ProgramData%\LoveThyNerd\TransitionForge` (with its own portable Node.js, so nothing else is required).
-3. Start OBS. In the log (Help > Log Files > View Current Log) you should see `Forge Transitions loaded`.
+1. Download **`OBS-CSS-Stinger-Forge-Setup-x.y.z.exe`** from the [latest release](../../releases/latest).
+2. Close OBS, run the installer. It installs the plugin to `%ProgramData%\obs-studio\plugins\forge-transitions` and the designer to `%ProgramData%\LoveThyNerd\OBSCSSStingerForge` (with its own portable Node.js, so nothing else is required).
+3. Start OBS. In the log (Help > Log Files > View Current Log) you should see `OBS CSS Stinger Forge loaded`.
 
 Windows may show a SmartScreen warning because the installer is not code-signed: choose *More info > Run anyway*.
 Requires OBS 31 or newer (64-bit) with the built-in Browser source.
 
 ## Use
 
-1. Open **Transition Forge** from the Start Menu and design a transition.
+1. Open **OBS CSS Stinger Forge** from the Start Menu and design a transition.
 2. In the **OBS plugin** panel, enter a name and press **Save as OBS transition**. The plugin picks it up within a couple of seconds, no OBS restart needed.
 3. In OBS: **Scene Transitions > +** and choose **Forge: your name**. (OBS has no public API for a plugin to add transitions to the dropdown itself, so each preset is added once with the + button.)
 

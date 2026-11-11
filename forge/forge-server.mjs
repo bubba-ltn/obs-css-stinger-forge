@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Local helper for Transition Forge. Serves the page on http://127.0.0.1:5177, saves picked logos
+// Local helper for OBS CSS Stinger Forge. Serves the page on http://127.0.0.1:5177, saves picked logos
 // into this folder, and runs render-stinger.mjs when you click "Export video".
 // Start it with start-forge.bat (or: node forge-server.mjs). Press Ctrl+C to stop.
 import http from 'node:http';
@@ -191,7 +191,7 @@ server.on('error', e => {
 });
 await syncSidecars();
 server.listen(PORT, HOST, () => {
-  console.log(`Transition Forge helper running at http://${HOST}:${PORT}/`);
+  console.log(`OBS CSS Stinger Forge helper running at http://${HOST}:${PORT}/`);
   console.log(`Folder: ${ROOT}`);
   console.log(`OBS presets: ${PRESETS}`);
   console.log('Leave this window open while you use the Forge. Press Ctrl+C to stop.');

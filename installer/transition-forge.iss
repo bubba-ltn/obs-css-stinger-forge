@@ -1,4 +1,4 @@
-; Inno Setup script for Transition Forge for OBS.
+; Inno Setup script for OBS CSS Stinger Forge.
 ; Built in CI (see .github/workflows/build-project.yaml). Expects:
 ;   installer\stage\plugin\forge-transitions\...   (the built OBS plugin)
 ;   installer\stage\node\node.exe                  (portable Node.js)
@@ -8,23 +8,23 @@
 
 [Setup]
 AppId={{B6F2D0B1-5C3E-4E7A-9A44-7E1F3D6A2C10}
-AppName=Transition Forge for OBS
+AppName=OBS CSS Stinger Forge
 AppVersion={#AppVersion}
 AppPublisher=Love Thy Nerd
 AppPublisherURL=https://lovethynerd.com
-DefaultDirName={commonappdata}\LoveThyNerd\TransitionForge
+DefaultDirName={commonappdata}\LoveThyNerd\OBSCSSStingerForge
 DisableDirPage=yes
-DefaultGroupName=Transition Forge
+DefaultGroupName=OBS CSS Stinger Forge
 DisableProgramGroupPage=yes
 OutputDir=..\release
-OutputBaseFilename=TransitionForge-Setup-{#AppVersion}
+OutputBaseFilename=OBS-CSS-Stinger-Forge-Setup-{#AppVersion}
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=admin
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
-UninstallDisplayName=Transition Forge for OBS
+UninstallDisplayName=OBS CSS Stinger Forge
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a desktop shortcut"; Flags: unchecked
@@ -42,13 +42,13 @@ Source: "..\forge\*"; DestDir: "{app}"; Excludes: "node_modules\*"; Flags: recur
 Source: "stage\node\*"; DestDir: "{app}\node"; Flags: recursesubdirs createallsubdirs ignoreversion
 
 [Icons]
-Name: "{autoprograms}\Transition Forge\Transition Forge"; Filename: "{app}\start-forge.bat"; WorkingDir: "{app}"; Comment: "Design OBS transitions"
-Name: "{autoprograms}\Transition Forge\Install video export (optional)"; Filename: "{app}\install-video-export.bat"; WorkingDir: "{app}"
-Name: "{autoprograms}\Transition Forge\Uninstall Transition Forge"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\Transition Forge"; Filename: "{app}\start-forge.bat"; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{autoprograms}\OBS CSS Stinger Forge\OBS CSS Stinger Forge"; Filename: "{app}\start-forge.bat"; WorkingDir: "{app}"; Comment: "Design CSS stinger transitions for OBS"
+Name: "{autoprograms}\OBS CSS Stinger Forge\Install video export (optional)"; Filename: "{app}\install-video-export.bat"; WorkingDir: "{app}"
+Name: "{autoprograms}\OBS CSS Stinger Forge\Uninstall OBS CSS Stinger Forge"; Filename: "{uninstallexe}"
+Name: "{autodesktop}\OBS CSS Stinger Forge"; Filename: "{app}\start-forge.bat"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\start-forge.bat"; Description: "Open Transition Forge now"; WorkingDir: "{app}"; Flags: postinstall nowait skipifsilent
+Filename: "{app}\start-forge.bat"; Description: "Open OBS CSS Stinger Forge now"; WorkingDir: "{app}"; Flags: postinstall nowait skipifsilent
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"
