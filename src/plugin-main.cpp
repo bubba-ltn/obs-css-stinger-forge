@@ -21,9 +21,19 @@ GNU General Public License for more details.
 //   2. cuts from scene A to scene B at the moment the animation fully covers the screen.
 // No video files are involved.
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#include <shellapi.h>
+#endif
+
 #include <obs-module.h>
+#include <obs-frontend-api.h>
 #include <util/platform.h>
 #include <plugin-support.h>
+
+#include "forge-http.h"
 
 #include <algorithm>
 #include <atomic>
@@ -144,6 +154,53 @@ struct ForgeTr {
 	}
 };
 
+struct BuiltIn {
+	const char *id;
+	const char *name;
+};
+// Ready-made transitions: they appear under Scene Transitions > + without saving anything.
+const BuiltIn kBuiltIns[] = {
+	{"wipe-r", "Wipe Right"}, {"wipe-l", "Wipe Left"},   {"wipe-d", "Wipe Down"},       {"wipe-u", "Wipe Up"},
+	{"slash", "Slash"},       {"panels", "Panels"},      {"drip", "Drip"},              {"split", "Split"},
+	{"iris", "Iris"},         {"diamond", "Diamond"},    {"star", "Star"},              {"blinds", "Blinds"},
+	{"spin", "Spin"},         {"pixel", "8-bit Pixels"}, {"checker", "Checker Sweep"},  {"glitch", "Glitch"},
+	{"crt", "CRT Power"},     {"fade", "Fade"},          {"flash", "Flash"},            {"zoom", "Zoom"},
+	{"tx-stack", "Stack Rows"}, {"tx-letters", "Letter Fly"}, {"tx-echo", "Echo Outline"},
+	{"tx-marquee", "Marquee Rows"}, {"tx-zoom", "Zoom Focus"}, {"tx-split", "Split Slide"},
+	{"tx-draw", "Stroke Draw"}, {"tl-pop", "Tile Pop"},  {"tl-wave", "Tile Flip Wave"}, {"tl-slide", "Tile Slide Rows"},
+	{"tl-spiral", "Tile Spiral"}, {"tl-rain", "Tile Rain"}, {"tl-marquee", "Angled Marquee"},
+};
+
+void open_designer()
+{
+	const int port = forge_http_port();
+	if (!port) {
+		obs_log(LOG_WARNING, "The designer server is not running");
+		return;
+	}
+#ifdef _WIN32
+	const std::string url = "http://127.0.0.1:" + std::to_string(port) + "/";
+	ShellExecuteA(nullptr, "open", url.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+#endif
+}
+
+void tools_menu_cb(void *)
+{
+	open_designer();
+}
+
+bool forge_open_clicked(obs_properties_t *, obs_property_t *, void *)
+{
+	open_designer();
+	return false;
+}
+
+void frontend_event(enum obs_frontend_event event, void *)
+{
+	if (event == OBS_FRONTEND_EVENT_FINISHED_LOADING)
+		obs_frontend_add_tools_menu_item("OBS CSS Stinger Forge...", tools_menu_cb, nullptr);
+}
+
 /* ------------------------------------------------------------------ source callbacks */
 
 const char *forge_get_name(void *type_data)
@@ -210,8 +267,10 @@ obs_properties_t *forge_properties(void *data, void *type_data)
 	obs_properties_add_int_slider(p, "sync_ms", "Overlay sync offset (ms)", 0, 400, 5);
 	if (data)
 		obs_properties_add_button2(p, "reload", "Reload overlay page", forge_reload_clicked, data);
+	obs_properties_add_button2(p, "open_designer", "Open the designer (also under Tools)", forge_open_clicked,
+				   nullptr);
 	obs_properties_add_text(p, "info",
-				"Edit the look in OBS CSS Stinger Forge (Save as OBS transition). The animation length is set by the preset.",
+				"Design your own transitions in OBS CSS Stinger Forge (Tools menu) and save them as OBS transitions. The animation length is set by the preset.",
 				OBS_TEXT_INFO);
 	return p;
 }
@@ -447,6 +506,31 @@ bool obs_module_load(void)
 		bfree(dir);
 	}
 	g_alive = true;
+	char *designer = obs_module_file("designer");
+	std::string designer_dir;
+	if (designer) {
+		designer_dir = designer;
+		bfree(designer);
+	}
+	if (!designer_dir.empty()) {
+		forge_http_start(designer_dir, g_presets_dir);
+		const std::string page = forge_page_url();
+		for (const BuiltIn &b : kBuiltIns) {
+			Preset *p = new Preset();
+			p->id = b.id;
+			p->type_id = std::string("forge_tr_") + b.id;
+			p->name = b.name;
+			p->display = std::string("Forge: ") + b.name;
+			p->page = page;
+			p->query = std::string("?t=") + b.id;
+			p->duration = 1400;
+			g_presets[p->id] = p;
+			register_preset_type(p);
+		}
+	} else {
+		obs_log(LOG_WARNING, "Designer files not found in the plugin data folder");
+	}
+	obs_frontend_add_event_callback(frontend_event, nullptr);
 	scan_presets();
 	g_stop = false;
 	g_watcher = std::thread(watcher_main);
@@ -458,6 +542,8 @@ bool obs_module_load(void)
 void obs_module_unload(void)
 {
 	g_alive = false;
+	obs_frontend_remove_event_callback(frontend_event, nullptr);
+	forge_http_stop();
 	g_stop = true;
 	if (g_watcher.joinable())
 		g_watcher.join();

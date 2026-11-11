@@ -166,7 +166,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
           <summary>How it works</summary>
           <ol>
             <li>Install the <b>OBS CSS Stinger Forge</b> plugin in OBS once (see the plugin's README).</li>
-            <li>Run <code>start-forge.bat</code>, design a transition, name it and press <b>Save as OBS transition</b>.</li>
+            <li>Open this page from OBS (<b>Tools > OBS CSS Stinger Forge</b>), design a transition, name it and press <b>Save as OBS transition</b>.</li>
             <li>In OBS, open <b>Scene Transitions</b>, press <b>+</b> and pick <b>Forge: your name</b>. It then lives in the dropdown like any native transition, with no video file.</li>
             <li>The animation length is saved with the preset. Saving again under the same name updates it in OBS within a couple of seconds.</li>
           </ol>
@@ -198,7 +198,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
           <ol>
             <li>Install <b>Node.js</b> and <b>ffmpeg</b> (ffmpeg must be on your PATH).</li>
             <li>In the folder with this file, run <code>npm init -y</code>, <code>npm i playwright</code>, then <code>npx playwright install chromium</code>.</li>
-            <li>Double-click <code>start-forge.bat</code> in this folder. It opens the Forge with the <b>Export video</b> button and saves picked logos into this folder for you. (Or run the copied command in a terminal.)</li>
+            <li>One-click video export is not part of the built-in plugin. Use the native OBS transitions instead.</li>
             <li>Export renders every frame with a transparent background and encodes a VP9 .webm with alpha. End the output name in <code>.mov</code> for ProRes 4444 instead.</li>
             <li>In OBS: Scene Transitions &gt; + &gt; Stinger &gt; pick the file, and set the Transition Point to the midpoint shown above.</li>
           </ol>
@@ -940,9 +940,9 @@ function updateLogoUI(){
     h='Saved \u201c'+logoSaved+'\u201d into your Forge folder'+(SRV?' ('+SRV.root+')':'')+'.';
   }else if(logoBlob){
     const dir=SRV?SRV.root:(location.protocol==='file:'?decodeURI(pageBase()).replace(/[^\/]*$/,'').replace(/^file:\/\/\//,''):'');
-    h='Copy \u201c'+S.logo+'\u201d into the same folder as this page'+(dir?' ('+dir+')':'')+' so OBS and the renderer can find it. Run start-forge.bat and I will save it there for you.';
+    h='Copy \u201c'+S.logo+'\u201d into the same folder as this page'+(dir?' ('+dir+')':'')+' so OBS and the renderer can find it. Open this page from OBS (Tools > OBS CSS Stinger Forge) and I will save it there for you.';
   }
-  if(/\.svg$/i.test(S.logo||'')&&!SRV)h+=' For true stroked/filled SVG rows in OBS, run start-forge.bat so the SVG gets prepared.';
+  if(/\.svg$/i.test(S.logo||'')&&!SRV)h+=' For true stroked/filled SVG rows in OBS, open this page from OBS (Tools > OBS CSS Stinger Forge) so the SVG gets prepared.';
   $('logoHint').textContent=h;
 }
 async function pickLogo(f){
@@ -1038,7 +1038,7 @@ function updateServerUI(){
   $('exportBtn').disabled=!SRV||exporting;
   const n=$('srvNote');
   if(SRV)n.textContent='Helper connected. Videos and logos are saved in '+SRV.root;
-  else n.innerHTML='To export with one click, double-click <code>start-forge.bat</code> in your Forge folder and use the page it opens. Until then, copy the command below.';
+  else n.innerHTML='One-click video export is not part of the built-in version. Use the native OBS transitions instead (Scene Transitions > + > Forge: ...).';
 }
 async function doExport(){
   if(!SRV||exporting)return;
@@ -1097,7 +1097,7 @@ async function loadPresets(){
 }
 function updateObsUI(){
   $('obsSave').disabled=!SRV||!$('obsname').value.trim();
-  $('obsNote').textContent=SRV?(SRV.presetsDir?('Presets are saved to '+SRV.presetsDir):''):'Start the helper (start-forge.bat) and use the page it opens to save transitions for OBS.';
+  $('obsNote').textContent=SRV?(SRV.presetsDir?('Presets are saved to '+SRV.presetsDir):''):'Open this page from OBS (Tools > OBS CSS Stinger Forge) to save transitions for OBS.';
 }
 async function saveObs(){
   const name=$('obsname').value.trim();if(!SRV||!name)return;

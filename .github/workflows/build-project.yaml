@@ -123,15 +123,6 @@ jobs:
             Get-ChildItem -Recurse installer/stage/plugin | Select-Object -ExpandProperty FullName
             throw "Plugin DLL not found in the packaged zip"
           }
-          $nodeVer = '22.11.0'
-          $nodeZip = "node-v$nodeVer-win-x64.zip"
-          Invoke-WebRequest "https://nodejs.org/dist/v$nodeVer/$nodeZip" -OutFile $nodeZip
-          Invoke-WebRequest "https://nodejs.org/dist/v$nodeVer/SHASUMS256.txt" -OutFile SHASUMS256.txt
-          $want = ((Select-String -Path SHASUMS256.txt -Pattern " $nodeZip$").Line -split '\s+')[0]
-          $got = (Get-FileHash $nodeZip -Algorithm SHA256).Hash.ToLower()
-          if ($want -ne $got) { throw "Node.js checksum mismatch" }
-          Expand-Archive $nodeZip -DestinationPath node-tmp
-          Move-Item "node-tmp/node-v$nodeVer-win-x64" installer/stage/node
           $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
           if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress }
           & $iscc "/DAppVersion=$v" installer/transition-forge.iss

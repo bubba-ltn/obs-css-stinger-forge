@@ -1,51 +1,40 @@
 # OBS CSS Stinger Forge
 
-Design animated scene transitions in your browser, then use them in OBS as **native transitions**. No video files, no stinger.
+CSS-animated scene transitions that run as **native OBS transitions**. No video files, no stinger, nothing else to install.
 Built by [Love Thy Nerd](https://lovethynerd.com).
 
-Two parts:
-
-* **OBS CSS Stinger Forge** (`forge/`): a single-page designer with about 40 CSS/WAAPI transitions (wipes, shapes, themed, minimal, stroked text, tiled logos). It can also render a transparent `.webm`/`.mov` for OBS's Stinger transition.
-* **OBS CSS Stinger Forge plugin** (`src/`): an OBS plugin. Every preset you save in the Forge shows up in OBS as `Forge: <name>`.
+* **33 ready-made transitions** (wipes, shapes, themed, minimal, stroked text, tiled logos) appear in OBS as `Forge: <name>`.
+* **A built-in designer** (OBS menu **Tools > OBS CSS Stinger Forge...**) lets you change colors, text, logo, speed and save your own.
 
 ## Install (Windows)
 
 1. Download **`OBS-CSS-Stinger-Forge-Setup-x.y.z.exe`** from the [latest release](../../releases/latest).
-2. Close OBS, run the installer. It installs the plugin to `%ProgramData%\obs-studio\plugins\forge-transitions` and the designer to `%ProgramData%\LoveThyNerd\OBSCSSStingerForge` (with its own portable Node.js, so nothing else is required).
-3. Start OBS. In the log (Help > Log Files > View Current Log) you should see `OBS CSS Stinger Forge loaded`.
+2. Close OBS and run the installer. It puts the plugin in `%ProgramData%\obs-studio\plugins\forge-transitions`.
+3. Start OBS. The log (Help > Log Files > View Current Log) shows `OBS CSS Stinger Forge loaded`.
 
 Windows may show a SmartScreen warning because the installer is not code-signed: choose *More info > Run anyway*.
 Requires OBS 31 or newer (64-bit) with the built-in Browser source.
 
 ## Use
 
-1. Open **OBS CSS Stinger Forge** from the Start Menu and design a transition.
-2. In the **OBS plugin** panel, enter a name and press **Save as OBS transition**. The plugin picks it up within a couple of seconds, no OBS restart needed.
-3. In OBS: **Scene Transitions > +** and choose **Forge: your name**. (OBS has no public API for a plugin to add transitions to the dropdown itself, so each preset is added once with the + button.)
+**Ready-made transitions:** in OBS open **Scene Transitions**, press **+**, and choose **Forge: Iris** (or any other `Forge:` entry). Pick it from the dropdown whenever you want it.
 
-Saving the same name again updates the preset. The helper window does not need to stay open while you stream.
+**Your own:** choose **Tools > OBS CSS Stinger Forge...** (or the *Open the designer* button in a Forge transition's properties). The designer opens in your browser. Design a transition, name it, press **Save as OBS transition**, then add it with **+** in Scene Transitions as **Forge: your name**. OBS has no public API for a plugin to add transitions to the dropdown itself, so each one is added once with the + button.
 
-### Optional: video (stinger) export
-Run **Install video export (optional)** from the Start Menu once (downloads Playwright + Chromium) and install ffmpeg (`winget install Gyan.FFmpeg`).
+The designer runs from inside OBS, so OBS must be open to use it. Saved and ready-made transitions work without it.
 
 ## Notes and limits
 
 * Sync offset (transition properties): the overlay starts a frame or two after the cut logic. Adjust if the scene change feels early or late (default 60 ms).
 * Studio Mode T-bar does not drive the animation (it is time-based).
-* SVG stroke/fill alternation needs the helper's sidecar files; PNG logos use an outline filter fallback.
-* Windows only for now. The plugin has not yet been tested on every OBS release; please open an issue with your OBS log if something fails.
+* Video (stinger) export from v0.1.0 was removed; the native transitions replace it.
+* Windows only for now, and not yet tested on every OBS release. Please open an issue with your OBS log if something fails.
 
 ## Build from source
 
-Push a tag like `v0.1.0` (or run the **Build** workflow in the Actions tab). GitHub Actions builds the plugin against OBS 31.1.1, packages the Setup `.exe`, and attaches both to the release.
-No Visual Studio needed locally.
+Push a tag like `v0.2.0` (or run the **Build** workflow in the Actions tab). GitHub Actions builds the plugin against OBS 31.1.1, packages the Setup `.exe`, and attaches both to a release. No Visual Studio needed locally.
 
-```
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-Run the designer without installing: `cd forge && node forge-server.mjs`.
+Uses [cpp-httplib](https://github.com/yhirose/cpp-httplib) (MIT) for the built-in local server.
 
 ## License
 
