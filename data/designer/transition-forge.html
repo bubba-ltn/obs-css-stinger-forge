@@ -125,6 +125,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
       </div>
       <div class="row"><label>Center text (optional)</label><input type="text" id="text" placeholder="LOVE THY NERD"></div>
       <div class="row"><label>Text color</label><input type="color" id="tc" style="height:36px;padding:2px;width:100%;border-radius:8px;border:1px solid var(--line);background:#0f1120"></div>
+      <div class="row" id="rowLc" hidden><label>Logo stroke color</label><input type="color" id="lc" style="height:36px;padding:2px;width:100%;border-radius:8px;border:1px solid var(--line);background:#0f1120"></div>
     </section>
 
     <section>
@@ -166,7 +167,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 'use strict';
 
 /* ---------- defaults, presets, easing ---------- */
-const DEF={t:'iris',d:1400,h:300,n:10,e:'smooth',c1:'#8b5cf6',c2:'#22d3ee',c3:'#0b0b12',mode:'full',logo:'',text:'LOVE THY NERD',tc:'#ffffff',font:'heavy',sw:4,ts:1,stg:50,sc:1,ang:-12};
+const DEF={t:'iris',d:1400,h:300,n:10,e:'smooth',c1:'#8b5cf6',c2:'#22d3ee',c3:'#0b0b12',mode:'full',logo:'',text:'LOVE THY NERD',tc:'#ffffff',lc:'#ffffff',font:'heavy',sw:4,ts:1,stg:50,sc:1,ang:-12};
 const PRESETS={
   'Nerd Purple':['#8b5cf6','#22d3ee','#0b0b12'],
   'Player One':['#ef4444','#3b82f6','#111827'],
@@ -609,7 +610,7 @@ function svgNode(c,key,mode,w,h){
     [svg].concat([].slice.call(svg.querySelectorAll('*'))).forEach(n=>{
       if(!n.style)return;
       n.style.setProperty('fill','none','important');
-      n.style.setProperty('stroke',c.o.tc,'important');
+      n.style.setProperty('stroke',c.o.lc,'important');
       n.style.setProperty('stroke-width',c.sw+'px','important');
       n.style.setProperty('stroke-linejoin','round','important');
       n.style.setProperty('vector-effect','non-scaling-stroke','important');
@@ -627,7 +628,7 @@ function outlineFilter(c){
   s.innerHTML='<filter id="forge-outline" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">'+
     '<feMorphology in="SourceAlpha" operator="dilate" radius="'+Math.max(1,c.sw)+'" result="d"/>'+
     '<feComposite in="d" in2="SourceAlpha" operator="out" result="ring"/>'+
-    '<feFlood flood-color="'+c.o.tc+'" result="col"/>'+
+    '<feFlood flood-color="'+c.o.lc+'" result="col"/>'+
     '<feComposite in="col" in2="ring" operator="in"/></filter>';
   c.stage.appendChild(s);
 }
@@ -769,7 +770,8 @@ function parseOpts(search){
   if(q.has('h'))o.h=clamp(isNaN(+q.get('h'))?DEF.h:+q.get('h'),0,5000);
   if(q.has('n'))o.n=clamp(Math.round(+q.get('n')||DEF.n),3,24);
   if(q.has('e')&&EASE[q.get('e')])o.e=q.get('e');
-  ['c1','c2','c3','tc'].forEach(k=>{if(q.has(k))o[k]=hex(q.get(k),DEF[k])});
+  ['c1','c2','c3','tc','lc'].forEach(k=>{if(q.has(k))o[k]=hex(q.get(k),DEF[k])});
+  if(!q.has('lc')&&q.has('tc'))o.lc=o.tc; // presets saved before the logo stroke color existed
   o.mode='full';
   if(q.has('font')&&FONTS[q.get('font')])o.font=q.get('font');
   if(q.has('sw'))o.sw=clamp(+q.get('sw')||DEF.sw,1,20);
@@ -872,7 +874,7 @@ $('palDel').onclick=async()=>{
 };
 fillPalettes('Custom');
 
-const keys=['d','h','n','e','font','sw','ts','stg','sc','ang','c1','c2','c3','logo','text','tc'];
+const keys=['d','h','n','e','font','sw','ts','stg','sc','ang','c1','c2','c3','logo','text','tc','lc'];
 keys.forEach(k=>{
   const el=$(k);
   el.addEventListener('input',()=>{
@@ -890,6 +892,7 @@ function buildQuery(){
   ['d','h','n','e','font','sw','ts','stg','sc','ang'].forEach(k=>p.set(k,S[k]));
   ['c1','c2','c3'].forEach(k=>p.set(k,S[k].replace('#','')));
   p.set('tc',S.tc.replace('#',''));
+  p.set('lc',S.lc.replace('#',''));
   p.set('text',S.text);
   if(S.logo)p.set('logo',S.logo);
   return '?'+p.toString();
@@ -942,6 +945,7 @@ function sync(fromInput){
   $('o_ang').textContent=S.ang+'\u00b0';
   $('rowAng').hidden=!TR[S.t].angle;
   $('rowSc').hidden=!TR[S.t].scroll;
+  $('rowLc').hidden=!TR[S.t].scroll;
   updateLogoUI();
 }
 
