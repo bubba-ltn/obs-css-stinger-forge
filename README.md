@@ -3,7 +3,7 @@
 CSS-animated scene transitions that run as **native OBS transitions**. No video files, no stinger, nothing else to install.
 Built by [Love Thy Nerd](https://lovethynerd.com).
 
-* **33 ready-made transitions** (wipes, shapes, themed, minimal, stroked text, tiled logos) appear in OBS as `Forge: <name>`.
+* **20 ready-made transitions** (wipes, shapes, themed, minimal) appear in OBS as `Forge: <name>`.
 * **A built-in designer** (OBS menu **Tools > OBS CSS Stinger Forge...**) lets you change colors, text, logo, speed and save your own.
 
 ## Install (Windows)

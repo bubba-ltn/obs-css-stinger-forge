@@ -178,6 +178,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 /* ---------- defaults, presets, easing ---------- */
 const DEF={t:'iris',d:1400,h:300,n:10,e:'smooth',c1:'#8b5cf6',c2:'#22d3ee',c3:'#0b0b12',mode:'full',logo:'',text:'',tc:'#ffffff',lc:'#ffffff',font:'heavy',sw:4,ts:1,stg:50,sc:1,ang:-12};
 const PRESETS={
+  'LTN':['#e80b8c','#40b3ff','#875ab5'],
   'Nerd Purple':['#8b5cf6','#22d3ee','#0b0b12'],
   'Player One':['#ef4444','#3b82f6','#111827'],
   'Gold & Black':['#facc15','#fb923c','#0a0a0a'],
@@ -495,9 +496,8 @@ function tileNode(c,sz,bgIdx,css){
     im.style.cssText='width:64%;height:64%;object-fit:contain;';
     e.appendChild(im);
   }else{
-    const ini=(c.txt.split(/\s+/).map(w=>w[0]||'').join('').toUpperCase().slice(0,4))||'LTN';
-    const S=Math.min(sz*.5,100*sz*.66/measure(c.font,ini));
-    mkSpan(e,ini,sty(c,S,'fill'));
+    const ini=(c.txt.split(/\s+/).map(w=>w[0]||'').join('').toUpperCase().slice(0,4));
+    if(ini){const S=Math.min(sz*.5,100*sz*.66/measure(c.font,ini));mkSpan(e,ini,sty(c,S,'fill'))}
   }
   return e;
 }

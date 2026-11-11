@@ -160,15 +160,13 @@ struct BuiltIn {
 };
 // Ready-made transitions: they appear under Scene Transitions > + without saving anything.
 const BuiltIn kBuiltIns[] = {
-	{"wipe-r", "Wipe Right"}, {"wipe-l", "Wipe Left"},   {"wipe-d", "Wipe Down"},       {"wipe-u", "Wipe Up"},
-	{"slash", "Slash"},       {"panels", "Panels"},      {"drip", "Drip"},              {"split", "Split"},
-	{"iris", "Iris"},         {"diamond", "Diamond"},    {"star", "Star"},              {"blinds", "Blinds"},
-	{"spin", "Spin"},         {"pixel", "8-bit Pixels"}, {"checker", "Checker Sweep"},  {"glitch", "Glitch"},
-	{"crt", "CRT Power"},     {"fade", "Fade"},          {"flash", "Flash"},            {"zoom", "Zoom"},
-	{"tx-stack", "Stack Rows"}, {"tx-letters", "Letter Fly"}, {"tx-echo", "Echo Outline"},
-	{"tx-marquee", "Marquee Rows"}, {"tx-zoom", "Zoom Focus"}, {"tx-split", "Split Slide"},
-	{"tx-draw", "Stroke Draw"}, {"tl-pop", "Tile Pop"},  {"tl-wave", "Tile Flip Wave"}, {"tl-slide", "Tile Slide Rows"},
-	{"tl-spiral", "Tile Spiral"}, {"tl-rain", "Tile Rain"}, {"tl-marquee", "Angled Marquee"},
+	{"wipe-r", "Wipe Right"}, {"wipe-l", "Wipe Left"}, {"wipe-d", "Wipe Down"},   {"wipe-u", "Wipe Up"},
+	{"slash", "Slash"},       {"panels", "Panels"},    {"drip", "Drip"},          {"split", "Split"},
+	{"iris", "Iris"},         {"diamond", "Diamond"},  {"star", "Star"},          {"blinds", "Blinds"},
+	{"spin", "Spin"},         {"pixel", "8-bit Pixels"}, {"checker", "Checker Sweep"}, {"glitch", "Glitch"},
+	{"crt", "CRT Power"},     {"fade", "Fade"},        {"flash", "Flash"},        {"zoom", "Zoom"},
+	// Text- and logo-based transitions are not built in: they need your own text or logo.
+	// Design them in the designer and save them.
 };
 
 void open_designer()
