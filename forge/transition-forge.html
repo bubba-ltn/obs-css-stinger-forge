@@ -1,0 +1,1128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Transition Forge</title>
+<style>
+:root{--bg:#0d0e16;--panel:#161826;--line:#2a2d44;--ink:#e9ebf8;--mute:#8a8fb2;--acc:#8b5cf6;--acc2:#22d3ee}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body.player{background:transparent;overflow:hidden}
+.stage{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+body.player .stage{position:fixed}
+header{padding:20px 24px 4px}
+header h1{margin:0;font-size:22px;letter-spacing:.02em}
+header p{margin:4px 0 0;color:var(--mute)}
+main{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:20px;padding:16px 24px 32px;align-items:start}
+@media(max-width:860px){main{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.panel+.panel{margin-top:16px}
+h2{margin:18px 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--mute)}
+h2:first-child{margin-top:0}
+.group{margin:0 0 6px;font-size:12px;color:var(--acc2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.chip{background:#1f2236;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font:inherit;font-size:12.5px;cursor:pointer}
+.chip:hover{border-color:var(--acc)}
+.chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.row{display:grid;gap:4px;margin:10px 0}
+.row.dim{opacity:.35}
+.row label{display:flex;justify-content:space-between;color:var(--mute);font-size:12.5px}
+.row output{color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--acc)}
+select,input[type=text]{width:100%;background:#0f1120;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font:inherit}
+.colors{display:flex;gap:8px}
+.colors input{width:100%;height:36px;border:1px solid var(--line);border-radius:8px;background:#0f1120;padding:2px;cursor:pointer}
+.pv{position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:12px;border:1px solid var(--line);background:#000}
+.scene{position:absolute;inset:0;display:grid;place-items:center;font:900 min(5vw,44px)/1 system-ui,sans-serif;letter-spacing:.1em;color:#fff;visibility:hidden}
+.scene.show{visibility:visible}
+.scene.a{background:linear-gradient(135deg,#1e3a8a,#0b1020)}
+.scene.b{background:linear-gradient(135deg,#be185d,#3b0764)}
+.bar{display:flex;gap:14px;align-items:center;margin:12px 0 0;flex-wrap:wrap}
+button.play{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:9px 18px;font:inherit;font-weight:600;cursor:pointer}
+button.play:hover{filter:brightness(1.1)}
+.bar label{color:var(--mute);display:flex;gap:6px;align-items:center}
+textarea{width:100%;min-height:74px;background:#0f1120;color:#c9f;border:1px solid var(--line);border-radius:8px;padding:8px;font:12px/1.4 ui-monospace,Consolas,monospace;resize:vertical}
+.btns{display:flex;gap:8px;margin-top:8px;align-items:center}
+.btns button,.btns a{background:#1f2236;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font:inherit;cursor:pointer;text-decoration:none}
+.btns button:hover,.btns a:hover{border-color:var(--acc)}
+details{margin-top:12px;color:var(--mute)}
+details summary{cursor:pointer;color:var(--ink)}
+details ol{padding-left:18px;margin:8px 0 0}
+details li{margin:4px 0}
+code{background:#0f1120;border:1px solid var(--line);border-radius:4px;padding:0 4px;color:var(--ink)}
+.hint{font-size:12px;color:var(--mute);margin-top:6px}
+.logo-pick{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#logoThumb{height:34px;max-width:90px;object-fit:contain;border-radius:6px;border:1px solid var(--line);background:repeating-conic-gradient(#222 0 25%,#333 0 50%) 0 0/10px 10px}
+#logoThumb[hidden],#logoClear[hidden]{display:none}
+.pv.drop{outline:2px dashed var(--acc);outline-offset:-6px}
+.prog{height:8px;background:#0f1120;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-top:10px}
+.prog div{height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .15s}
+pre#log{margin:8px 0 0;max-height:150px;overflow:auto;background:#0f1120;border:1px solid var(--line);border-radius:8px;padding:8px;font:12px/1.4 ui-monospace,Consolas,monospace;color:var(--mute);white-space:pre-wrap}
+.prog[hidden],pre#log[hidden],#cancelBtn[hidden]{display:none}
+button:disabled{opacity:.45;cursor:not-allowed}
+.sub{margin:14px 0 6px;font-size:12px;color:var(--mute)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>Transition Forge</h1>
+    <p>Design a scene transition, then copy the URL into an OBS Browser Source.</p>
+  </header>
+  <main>
+    <section class="panel">
+      <h2>Transition</h2>
+      <div id="chips"></div>
+
+      <h2>Timing</h2>
+      <div class="row"><label>Duration <output id="o_d"></output></label><input type="range" id="d" min="400" max="4000" step="50"></div>
+      <div class="row"><label>Hold (fully covered) <output id="o_h"></output></label><input type="range" id="h" min="0" max="2000" step="50"></div>
+      <div class="row" id="rowN"><label>Density <output id="o_n"></output></label><input type="range" id="n" min="3" max="24" step="1"></div>
+      <div class="row"><label>Easing</label>
+        <select id="e">
+          <option value="smooth">Smooth</option>
+          <option value="snappy">Snappy</option>
+          <option value="soft">Soft</option>
+          <option value="overshoot">Overshoot</option>
+          <option value="linear">Linear</option>
+        </select></div>
+      <div class="row"><label>Play style</label>
+        <select id="mode">
+          <option value="reveal">Reveal: plays when scene becomes active</option>
+          <option value="full">Full: cover, cut, reveal (hotkey / loop)</option>
+        </select></div>
+
+      <div class="row" id="rowAng" hidden><label>Angle <output id="o_ang"></output></label><input type="range" id="ang" min="-60" max="60" step="1"></div>
+      <div class="row" id="rowSc" hidden><label>Scroll speed <output id="o_sc"></output></label><input type="range" id="sc" min="0.25" max="4" step="0.25"></div>
+
+      <div id="textSec" hidden>
+        <h2>Text</h2>
+        <div class="row"><label>Text speed <output id="o_ts"></output></label><input type="range" id="ts" min="0.5" max="4" step="0.1"></div>
+        <div class="row"><label>Stagger <output id="o_stg"></output></label><input type="range" id="stg" min="0" max="100" step="5"></div>
+        <div class="row"><label>Font</label>
+          <select id="font">
+            <option value="heavy">Heavy italic</option>
+            <option value="condensed">Condensed (Impact)</option>
+            <option value="mono">Mono</option>
+          </select></div>
+        <div class="row"><label>Stroke width <output id="o_sw"></output></label><input type="range" id="sw" min="1" max="14" step="1"></div>
+      </div>
+
+      <h2>Look</h2>
+      <div class="row"><label>Palette</label><select id="preset"></select></div>
+      <div class="colors"><input type="color" id="c1" title="Color 1 (leading)"><input type="color" id="c2" title="Color 2"><input type="color" id="c3" title="Color 3 (top layer)"></div>
+      <div class="row"><label>Logo image (optional)</label>
+        <div class="logo-pick">
+          <img id="logoThumb" alt="" hidden>
+          <button type="button" class="chip" id="logoBtn">Choose image…</button>
+          <button type="button" class="chip" id="logoClear" hidden>Clear</button>
+          <input type="file" id="logoFile" accept="image/*" hidden>
+        </div>
+        <input type="text" id="logo" placeholder="…or type a file name, path or URL">
+        <div class="hint" id="logoHint">You can also drop an image onto the preview.</div>
+      </div>
+      <div class="row"><label>Center text (optional)</label><input type="text" id="text" placeholder="LOVE THY NERD"></div>
+      <div class="row"><label>Text color</label><input type="color" id="tc" style="height:36px;padding:2px;width:100%;border-radius:8px;border:1px solid var(--line);background:#0f1120"></div>
+    </section>
+
+    <section>
+      <div class="pv" id="pv">
+        <div class="scene a show" id="scA">SCENE A</div>
+        <div class="scene b" id="scB">SCENE B</div>
+        <div class="stage" id="stage"></div>
+      </div>
+      <div class="bar">
+        <button class="play" id="play">▶ Play</button>
+        <label><input type="checkbox" id="loop"> Loop preview</label>
+        <span class="hint">Preview shows Scene A cutting to Scene B at the midpoint (Full) or revealing Scene B (Reveal).</span>
+      </div>
+
+      <div class="panel" style="margin-top:16px">
+        <h2>OBS Browser Source URL</h2>
+        <textarea id="url" readonly></textarea>
+        <div class="btns"><button id="copy">Copy URL</button><a id="open" target="_blank" rel="noopener">Open player</a><span class="hint" id="copied"></span></div>
+        <details open>
+          <summary>How to use it in OBS</summary>
+          <ol>
+            <li>Open this file from your computer (double-click it) so the URL above points to it, then copy the URL.</li>
+            <li>In OBS add a <b>Browser</b> source, paste the URL, leave <i>Local file</i> unchecked, set Width <code>1920</code> and Height <code>1080</code>.</li>
+            <li>Check <b>Refresh browser when scene becomes active</b>. Put the source on top of each scene you cut to, or in a shared nested scene.</li>
+            <li>With Reveal, the screen is covered the moment the scene goes live and then wipes away to show it. Use Full if you trigger it by hotkey or by clicking the source in Interact.</li>
+          </ol>
+        </details>
+      </div>
+
+      <div class="panel">
+        <h2>OBS plugin (native transition)</h2>
+        <div class="row"><label>Transition name</label>
+          <input type="text" id="obsname" spellcheck="false" maxlength="40" placeholder="e.g. Cyber Iris"></div>
+        <div class="btns"><button class="play" id="obsSave" disabled>Save as OBS transition</button><span class="hint" id="obsState"></span></div>
+        <p class="hint" id="obsNote"></p>
+        <div id="obsList"></div>
+        <details>
+          <summary>How it works</summary>
+          <ol>
+            <li>Install the <b>Forge Transitions</b> plugin in OBS once (see the plugin's README).</li>
+            <li>Run <code>start-forge.bat</code>, design a transition, name it and press <b>Save as OBS transition</b>.</li>
+            <li>In OBS, open <b>Scene Transitions</b>, press <b>+</b> and pick <b>Forge: your name</b>. It then lives in the dropdown like any native transition, with no video file.</li>
+            <li>The animation length is saved with the preset. Saving again under the same name updates it in OBS within a couple of seconds.</li>
+          </ol>
+        </details>
+      </div>
+
+      <div class="panel">
+        <h2>Render to .webm (OBS Stinger)</h2>
+        <div class="row"><label>ffmpeg path (blank if plain "ffmpeg" works in your terminal)</label>
+          <input type="text" id="ffpath" spellcheck="false"></div>
+        <div class="row"><label>Frame rate</label>
+          <select id="fps">
+            <option value="24">24 fps (cinematic)</option>
+            <option value="30">30 fps</option>
+            <option value="60">60 fps (smoothest)</option>
+          </select></div>
+        <div class="row"><label>Output file name (.webm or .mov)</label>
+          <input type="text" id="outname" spellcheck="false"></div>
+        <div class="btns"><button class="play" id="exportBtn" disabled>Export video</button><button id="cancelBtn" hidden>Cancel</button><span class="hint" id="exportState"></span></div>
+        <div class="prog" id="prog" hidden><div id="progBar"></div></div>
+        <pre id="log" hidden></pre>
+        <p class="hint" id="srvNote"></p>
+        <p class="hint" id="tp"></p>
+        <div class="sub">Or run it yourself in a terminal:</div>
+        <textarea id="cmd" readonly></textarea>
+        <div class="btns"><button id="copycmd">Copy command</button><span class="hint" id="copied2"></span></div>
+        <details>
+          <summary>One-time setup</summary>
+          <ol>
+            <li>Install <b>Node.js</b> and <b>ffmpeg</b> (ffmpeg must be on your PATH).</li>
+            <li>In the folder with this file, run <code>npm init -y</code>, <code>npm i playwright</code>, then <code>npx playwright install chromium</code>.</li>
+            <li>Double-click <code>start-forge.bat</code> in this folder. It opens the Forge with the <b>Export video</b> button and saves picked logos into this folder for you. (Or run the copied command in a terminal.)</li>
+            <li>Export renders every frame with a transparent background and encodes a VP9 .webm with alpha. End the output name in <code>.mov</code> for ProRes 4444 instead.</li>
+            <li>In OBS: Scene Transitions &gt; + &gt; Stinger &gt; pick the file, and set the Transition Point to the midpoint shown above.</li>
+          </ol>
+        </details>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- defaults, presets, easing ---------- */
+const DEF={t:'iris',d:1400,h:300,n:10,e:'smooth',c1:'#8b5cf6',c2:'#22d3ee',c3:'#0b0b12',mode:'reveal',logo:'',text:'LOVE THY NERD',tc:'#ffffff',font:'heavy',sw:4,ts:1,stg:50,sc:1,ang:-12};
+const PRESETS={
+  'Nerd Purple':['#8b5cf6','#22d3ee','#0b0b12'],
+  'Player One':['#ef4444','#3b82f6','#111827'],
+  'Gold & Black':['#facc15','#fb923c','#0a0a0a'],
+  'Retro Mint':['#34d399','#a3e635','#052e16'],
+  'Mono':['#ffffff','#9ca3af','#111827']
+};
+const EASE={smooth:'cubic-bezier(.65,0,.35,1)',snappy:'cubic-bezier(.87,0,.13,1)',soft:'ease-in-out',overshoot:'cubic-bezier(.68,-.4,.3,1.4)',linear:'linear'};
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+// Accept Windows paths like C:\Users\me\logo.png as well as normal URLs
+const imgSrc=v=>/^[a-z]:[\\\/]/i.test(v)?'file:///'+v.replace(/\\/g,'/').split('/').map((x,i)=>i?encodeURIComponent(x):x).join('/'):v;
+const rnd=()=>Math.random();
+
+/* ---------- transitions ---------- */
+const TR={};
+const T=(id,g,l,o)=>{TR[id]=Object.assign({g,l},o)};
+
+// layered(): 3 stacked layers. Colors enter bottom->top, leave top->bottom, giving striped edges.
+function layered(c,css,from,mid,to,extra){
+  const out=[];
+  for(let i=0;i<3;i++){
+    const e=c.el(css+'background:'+c.cols[i]+';'+(extra||''));
+    c.A(e,from,mid,to,i/2,(2-i)/2);
+    out.push(e);
+  }
+  return out;
+}
+const star=k=>'polygon('+Array.from({length:10},(_,i)=>{
+  const a=(-90+i*36)*Math.PI/180,r=(i%2?0.45:1)*k;
+  return (50+r*Math.cos(a)).toFixed(2)+'% '+(50+r*Math.sin(a)).toFixed(2)+'%';
+}).join(',')+')';
+
+const wipe=(from,to)=>({stag:true,build(c){layered(c,'inset:0;',{transform:'translate('+from+')'},{transform:'translate(0%,0%)'},{transform:'translate('+to+')'})}});
+T('wipe-r','Wipes & slides','Wipe →',wipe('-101%,0%','101%,0%'));
+T('wipe-l','Wipes & slides','Wipe ←',wipe('101%,0%','-101%,0%'));
+T('wipe-d','Wipes & slides','Wipe ↓',wipe('0%,-101%','0%,101%'));
+T('wipe-u','Wipes & slides','Wipe ↑',wipe('0%,101%','0%,-101%'));
+T('slash','Wipes & slides','Slash',{stag:true,build(c){
+  layered(c,'top:-5%;bottom:-5%;left:-30%;width:160%;',
+    {transform:'translate(-110%,0%) skewX(-18deg)'},{transform:'translate(0%,0%) skewX(-18deg)'},{transform:'translate(110%,0%) skewX(-18deg)'});
+}});
+T('panels','Wipes & slides','Panels',{n:1,stag:true,build(c){
+  const np=clamp(Math.round(c.o.n/2),3,8);
+  for(let i=0;i<np;i++){
+    const dir=i%2?1:-1,e=c.el('top:0;bottom:0;left:'+(i*100/np)+'%;width:'+(100/np+0.3)+'%;background:'+c.cols[i%3]);
+    const dl=i/(np-1);
+    c.A(e,{transform:'translate(0%,'+(-101*dir)+'%)'},{transform:'translate(0%,0%)'},{transform:'translate(0%,'+(101*dir)+'%)'},dl,dl);
+  }
+}});
+T('drip','Wipes & slides','Drip',{n:1,stag:true,build(c){
+  const nc=clamp(c.o.n,4,24);
+  for(let i=0;i<nc;i++){
+    const e=c.el('top:0;bottom:0;left:'+(i*100/nc)+'%;width:'+(100/nc+0.3)+'%;background:'+c.cols[i%3]);
+    c.A(e,{transform:'translate(0%,-101%)'},{transform:'translate(0%,0%)'},{transform:'translate(0%,101%)'},rnd(),rnd());
+  }
+}});
+T('split','Wipes & slides','Split',{build(c){
+  const l=c.el('left:0;top:0;bottom:0;width:50.3%;background:'+c.cols[0]);
+  const r=c.el('right:0;top:0;bottom:0;width:50.3%;background:'+c.cols[1]);
+  c.A(l,{transform:'translate(-101%,0%)'},{transform:'translate(0%,0%)'},{transform:'translate(0%,-101%)'});
+  c.A(r,{transform:'translate(101%,0%)'},{transform:'translate(0%,0%)'},{transform:'translate(0%,101%)'});
+}});
+
+T('iris','Shapes & reveals','Iris',{stag:true,build(c){
+  layered(c,'inset:0;',{clipPath:'circle(0% at 50% 50%)'},{clipPath:'circle(75% at 50% 50%)'},{clipPath:'circle(0% at 50% 50%)'});
+}});
+T('diamond','Shapes & reveals','Diamond',{stag:true,build(c){
+  const s='polygon(50% 50%,50% 50%,50% 50%,50% 50%)',f='polygon(50% -60%,160% 50%,50% 160%,-60% 50%)';
+  layered(c,'inset:0;',{clipPath:s},{clipPath:f},{clipPath:s});
+}});
+T('star','Shapes & reveals','Star',{stag:true,build(c){
+  layered(c,'inset:0;',{clipPath:star(0)},{clipPath:star(300)},{clipPath:star(0)});
+}});
+T('blinds','Shapes & reveals','Blinds',{n:1,stag:true,build(c){
+  const nb=clamp(c.o.n,4,24);
+  for(let i=0;i<nb;i++){
+    const e=c.el('left:0;right:0;top:'+(i*100/nb)+'%;height:'+(100/nb+0.4)+'%;background:'+c.cols[i%3]);
+    const dl=i/(nb-1);
+    c.A(e,{transform:'scale(1,0)'},{transform:'scale(1,1)'},{transform:'scale(1,0)'},dl,dl);
+  }
+}});
+T('spin','Shapes & reveals','Spin',{stag:true,build(c){
+  const S=Math.hypot(c.W,c.H)*1.03;
+  layered(c,'left:'+((c.W-S)/2)+'px;top:'+((c.H-S)/2)+'px;width:'+S+'px;height:'+S+'px;',
+    {transform:'rotate(-120deg) scale(0)'},{transform:'rotate(0deg) scale(1)'},{transform:'rotate(120deg) scale(0)'});
+}});
+
+function grid(c,colorFn,delayFn){
+  const cols=clamp(c.o.n,3,24),rows=Math.max(1,Math.round(cols*c.H/c.W));
+  for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
+    const col=colorFn(x,y,cols,rows);
+    const e=c.el('left:'+(x*100/cols)+'%;top:'+(y*100/rows)+'%;width:'+(100/cols)+'%;height:'+(100/rows)+'%;background:'+col+';box-shadow:0 0 0 .7px '+col);
+    const dl=delayFn(x,y,cols,rows);
+    c.A(e,{transform:'scale(0)'},{transform:'scale(1.02)'},{transform:'scale(0)'},dl,dl);
+  }
+}
+T('pixel','Themed (nerd / gaming)','8-bit Pixels',{n:1,stag:true,build(c){
+  grid(c,()=>c.cols[Math.floor(rnd()*3)],()=>rnd());
+}});
+T('checker','Themed (nerd / gaming)','Checker Sweep',{n:1,stag:true,build(c){
+  grid(c,(x,y)=>c.cols[(x+y)%2],(x,y,cols,rows)=>(x+y)/(cols+rows-2));
+}});
+T('glitch','Themed (nerd / gaming)','Glitch',{n:1,build(c){
+  const nb=clamp(c.o.n,6,24),d=c.d,u=c.u,hd=c.hd;
+  const f=x=>clamp(x/d,0,1),r=()=>'translate('+(rnd()*44-22).toFixed(1)+'%,0%)',j=()=>(rnd()-.5)*u*.08;
+  for(let i=0;i<nb;i++){
+    const e=c.el('left:-5%;width:110%;top:'+(i*100/nb)+'%;height:'+(100/nb+0.4)+'%;background:'+c.cols[Math.floor(rnd()*3)]);
+    const s='steps(1,end)',z='translate(0%,0%)',o1=u+hd;
+    const kf=[
+      {opacity:0,transform:r(),offset:0,easing:s},
+      {opacity:1,transform:r(),offset:f(u*.2+j()),easing:s},
+      {opacity:0,transform:r(),offset:f(u*.45+j()),easing:s},
+      {opacity:1,transform:r(),offset:f(u*.68+j()),easing:s},
+      {opacity:1,transform:z,offset:f(u),easing:s},
+      {opacity:1,transform:z,offset:f(o1),easing:s},
+      {opacity:0,transform:r(),offset:f(o1+u*.3+j()),easing:s},
+      {opacity:1,transform:r(),offset:f(o1+u*.5+j()),easing:s},
+      {opacity:0,transform:r(),offset:f(o1+u*.8+j()),easing:s},
+      {opacity:0,transform:z,offset:1}
+    ];
+    c.raw(e,kf);
+  }
+}});
+T('crt','Themed (nerd / gaming)','CRT Power',{stag:true,build(c){
+  layered(c,'inset:0;',{clipPath:'inset(50% 0% 50% 0%)'},{clipPath:'inset(0% 0% 0% 0%)'},{clipPath:'inset(0% 50% 0% 50%)'});
+  const s=c.el('inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 2px,transparent 2px 4px)');
+  c.A(s,{opacity:0},{opacity:1},{opacity:0},1,0);
+}});
+
+T('fade','Minimal','Fade',{build(c){
+  const e=c.el('inset:0;background:'+c.cols[0]);
+  c.A(e,{opacity:0},{opacity:1},{opacity:0});
+}});
+T('flash','Minimal','Flash',{build(c){
+  const e=c.el('inset:0;background:radial-gradient(circle at 50% 50%,#fff 0%,#fff 35%,'+c.cols[1]+' 100%)');
+  c.A(e,{opacity:0},{opacity:1},{opacity:0});
+}});
+T('zoom','Minimal','Zoom',{build(c){
+  const e=c.el('inset:0;background:radial-gradient(circle at 50% 50%,'+c.cols[1]+' 0%,'+c.cols[0]+' 70%)');
+  c.A(e,{opacity:0,transform:'scale(.25)'},{opacity:1,transform:'scale(1)'},{opacity:0,transform:'scale(3)'});
+}});
+
+
+/* ---------- stroked-text transitions ---------- */
+const FONTS={
+  heavy:{fam:'"Segoe UI Black","Arial Black","Helvetica Neue",Arial,sans-serif',w:900,st:'italic'},
+  condensed:{fam:'Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif',w:400,st:'italic'},
+  mono:{fam:'Consolas,"Courier New",monospace',w:800,st:'normal'}
+};
+let _cv;
+function measure(f,t){_cv=_cv||document.createElement('canvas').getContext('2d');_cv.font=f.st+' '+f.w+' 100px '+f.fam;return Math.max(1,_cv.measureText(t).width)}
+const fitS=(c,frac,capH)=>Math.min(100*c.W*frac/measure(c.font,c.txt),c.H*capH);
+const glow=h=>/^#[0-9a-f]{6}$/i.test(h)?h+'bb':h;
+function sty(c,S,kind){
+  const f=c.font;
+  let r='font:'+f.st+' '+f.w+' '+S+'px/1 '+f.fam+';white-space:pre;letter-spacing:.015em;';
+  if(kind==='fill')r+='color:'+c.o.tc+';text-shadow:0 0 '+(S*.12).toFixed(1)+'px '+glow(c.o.c2)+';';
+  else if(kind==='out')r+='color:transparent;-webkit-text-stroke:'+c.sw+'px '+c.o.tc+';';
+  else r+='color:transparent;-webkit-text-stroke:'+c.sw+'px '+c.o.c2+';';
+  return r;
+}
+const mkSpan=(parent,txt,css)=>{const e=document.createElement('span');e.textContent=txt;e.style.cssText=css;parent.appendChild(e);return e};
+const centered=(c,css)=>c.el('left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;'+(css||''));
+// Two-layer background: c2 leads, c1 sits on top. Text transitions draw their own text over it.
+function bgSweep(c,mode){
+  const M={
+    r:[{transform:'translate(-101%,0%)'},{transform:'translate(0%,0%)'},{transform:'translate(101%,0%)'}],
+    d:[{transform:'translate(0%,-101%)'},{transform:'translate(0%,0%)'},{transform:'translate(0%,101%)'}],
+    iris:[{clipPath:'circle(0% at 50% 50%)'},{clipPath:'circle(75% at 50% 50%)'},{clipPath:'circle(0% at 50% 50%)'}],
+    line:[{clipPath:'inset(50% 0% 50% 0%)'},{clipPath:'inset(0% 0% 0% 0%)'},{clipPath:'inset(0% 50% 0% 50%)'}],
+    slash:[{transform:'translate(-110%,0%) skewX(-18deg)'},{transform:'translate(0%,0%) skewX(-18deg)'},{transform:'translate(110%,0%) skewX(-18deg)'}]
+  }[mode];
+  const geo=mode==='slash'?'top:-5%;bottom:-5%;left:-30%;width:160%;':'inset:0;';
+  const a=c.el(geo+'background:'+c.cols[1]),b=c.el(geo+'background:'+c.cols[0]);
+  c.IO(a,[Object.assign({p:0},M[0])],M[1],[Object.assign({p:1},M[2])],{ia:0,ib:.42,oa:.5,ob:1,bg:1});
+  c.IO(b,[Object.assign({p:0},M[0])],M[1],[Object.assign({p:1},M[2])],{ia:.12,ib:.54,oa:.3,ob:.76,bg:1});
+}
+const BLUR='blur(16px)',NOBLUR='blur(0px)';
+
+T('tx-stack','Stroked text','Stack Rows',{text:1,build(c){
+  bgSweep(c,'r');
+  const S=fitS(c,.55,.2),pitch=S*.9,rows=Math.ceil(c.H*1.12/pitch)|1,mid=(rows-1)/2;
+  for(let r=0;r<rows;r++){
+    const k=r-mid,ak=Math.abs(k),dir=ak%2?1:-1,x=c.W*.9;
+    const row=c.el('left:0;width:100%;top:'+(c.H/2+k*pitch-pitch/2)+'px;height:'+pitch+'px;display:flex;align-items:center;justify-content:center;');
+    mkSpan(row,c.txt,sty(c,S,ak%2?'out':'fill'));
+    const si=mid?ak/mid:0;
+    c.IO(row,[{p:0,transform:'translate('+(dir*x)+'px,0px)',filter:BLUR,opacity:0}],
+      {transform:'translate(0px,0px)',filter:NOBLUR,opacity:1},
+      [{p:1,transform:'translate('+(-dir*x)+'px,0px)',filter:BLUR,opacity:0}],
+      {ia:.28,ib:1,oa:0,ob:.62,si:si,so:1-si,win:.5});
+  }
+}});
+
+T('tx-letters','Stroked text','Letter Fly',{text:1,build(c){
+  bgSweep(c,'d');
+  const S=fitS(c,.86,.5),row=centered(c),ch=[...c.txt],n=ch.length,x=c.W*.7;
+  const none='0 0 0px rgba(0,0,0,0)',gl='0 0 '+(S*.12).toFixed(1)+'px '+glow(c.o.c2),clear='rgba(255,255,255,0)';
+  ch.forEach((g,i)=>{
+    const e=mkSpan(row,g,sty(c,S,'out')+'display:inline-block;');
+    const t=n>1?i/(n-1):0,hold={transform:'translate(0px,0px) scale(1)',filter:NOBLUR,opacity:1,color:c.o.tc,textShadow:gl};
+    c.IO(e,[
+      {p:0,transform:'translate('+x+'px,0px) scale(1.5)',filter:BLUR,opacity:0,color:clear,textShadow:none},
+      {p:.6,transform:'translate(0px,0px) scale(1)',filter:NOBLUR,opacity:1,color:clear,textShadow:none}],
+      hold,
+      [{p:.35,transform:'translate(0px,0px) scale(1)',filter:NOBLUR,opacity:1,color:clear,textShadow:none},
+       {p:1,transform:'translate('+(-x)+'px,0px) scale(1.5)',filter:BLUR,opacity:0,color:clear,textShadow:none}],
+      {ia:.25,ib:1,oa:0,ob:.65,si:t,so:t,win:.55});
+  });
+}});
+
+T('tx-echo','Stroked text','Echo Outline',{text:1,build(c){
+  bgSweep(c,'iris');
+  const S=fitS(c,.6,.3),m=6;
+  for(let j=m;j>=1;j--){
+    const w=centered(c),t=(j-1)/(m-1);
+    mkSpan(w,c.txt,sty(c,S,j%2?'out':'out2'));
+    c.IO(w,[{p:0,transform:'scale(1)',opacity:0}],{transform:'scale('+(1+j*.17)+')',opacity:.95-j*.12},
+      [{p:1,transform:'scale(1)',opacity:0}],{ia:.3,ib:1,oa:0,ob:.7,si:t,so:1-t,win:.5});
+  }
+  const main=centered(c);mkSpan(main,c.txt,sty(c,S,'fill'));
+  c.IO(main,[{p:0,transform:'scale(.5)',opacity:0,filter:BLUR}],{transform:'scale(1)',opacity:1,filter:NOBLUR},
+    [{p:1,transform:'scale(1.25)',opacity:0,filter:BLUR}],{ia:.3,ib:.9,oa:.2,ob:.8});
+}});
+
+T('tx-marquee','Stroked text','Marquee Rows',{text:1,scroll:1,build(c){
+  bgSweep(c,'d');
+  const S=Math.min(c.H*.16,fitS(c,.9,.2)),pitch=S*.92,rows=Math.ceil(c.H*1.12/pitch)|1,mid=(rows-1)/2;
+  const tw=measure(c.font,c.txt)*S/100,gap=S*.5,period=tw+gap,dist=c.W*.55*clamp(+c.o.sc||1,.25,4),copies=Math.ceil((c.W+dist)/period)+2;
+  for(let r=0;r<rows;r++){
+    const k=r-mid,ak=Math.abs(k),dir=r%2?1:-1;
+    const wrap=c.el('left:0;width:100%;top:'+(c.H/2+k*pitch-pitch/2)+'px;height:'+pitch+'px;overflow:hidden;');
+    const inner=document.createElement('div');
+    inner.style.cssText='position:absolute;left:0;top:0;height:100%;display:flex;align-items:center;white-space:nowrap;gap:'+gap+'px;';
+    for(let i=0;i<copies;i++)mkSpan(inner,c.txt,sty(c,S,ak%2?'out':'fill'));
+    wrap.appendChild(inner);
+    const x0=-Math.random()*period,a=dir>0?x0-dist:x0,b=dir>0?x0:x0-dist;
+    c.raw(inner,[{transform:'translate('+a+'px,0px)',offset:0},{transform:'translate('+b+'px,0px)',offset:1}]);
+    const si=mid?r/(rows-1):0,L='inset(0% 100% 0% 0%)',R='inset(0% 0% 0% 100%)';
+    c.IO(wrap,[{p:0,clipPath:dir>0?L:R}],{clipPath:'inset(0% 0% 0% 0%)'},[{p:1,clipPath:dir>0?R:L}],
+      {ia:.25,ib:1,oa:0,ob:.7,si:si,so:si,win:.5});
+  }
+}});
+
+T('tx-zoom','Stroked text','Zoom Focus',{text:1,build(c){
+  bgSweep(c,'line');
+  const S=fitS(c,.66,.3),m=6;
+  for(let j=m;j>=1;j--){
+    const w=centered(c),t=(j-1)/(m-1);
+    mkSpan(w,c.txt,sty(c,S,j%2?'out':'out2'));
+    c.IO(w,[{p:0,transform:'scale('+(3+j*1.3)+')',opacity:0,filter:BLUR}],
+      {transform:'scale('+(1+j*.07)+')',opacity:.8-j*.1,filter:NOBLUR},
+      [{p:1,transform:'scale('+(6+j)+')',opacity:0,filter:BLUR}],
+      {ia:.3,ib:1,oa:0,ob:.75,si:1-t,so:t,win:.5});
+  }
+  const main=centered(c);mkSpan(main,c.txt,sty(c,S,'fill'));
+  c.IO(main,[{p:0,transform:'scale(4)',opacity:0,filter:BLUR}],{transform:'scale(1)',opacity:1,filter:NOBLUR},
+    [{p:1,transform:'scale(8)',opacity:0,filter:BLUR}],{ia:.35,ib:1,oa:0,ob:.7});
+}});
+
+T('tx-split','Stroked text','Split Slide',{text:1,build(c){
+  bgSweep(c,'r');
+  const S=fitS(c,.74,.34),x=c.W*.55;
+  const big=centered(c);mkSpan(big,c.txt,sty(c,S*2.4,'out2')+'opacity:.55;');
+  c.IO(big,[{p:0,transform:'translate('+(c.W*.25)+'px,0px)',opacity:0}],{transform:'translate(0px,0px)',opacity:1},
+    [{p:1,transform:'translate('+(-c.W*.25)+'px,0px)',opacity:0}],{ia:.3,ib:1,oa:0,ob:.8});
+  [['inset(0% 0% 50% 0%)',-1],['inset(50% 0% 0% 0%)',1]].forEach(function(h){
+    const w=centered(c,'clip-path:'+h[0]+';');mkSpan(w,c.txt,sty(c,S,'fill'));
+    c.IO(w,[{p:0,transform:'translate('+(h[1]*x)+'px,0px)',filter:BLUR,opacity:0}],
+      {transform:'translate(0px,0px)',filter:NOBLUR,opacity:1},
+      [{p:1,transform:'translate('+(-h[1]*x)+'px,0px)',filter:BLUR,opacity:0}],{ia:.3,ib:1,oa:0,ob:.65});
+  });
+  const line=c.el('left:0;width:100%;top:'+(c.H/2-c.sw)+'px;height:'+(c.sw*2)+'px;background:'+c.o.tc);
+  c.IO(line,[{p:0,transform:'scaleX(0)'}],{transform:'scaleX(1)'},[{p:1,transform:'scaleX(0)'}],{ia:.2,ib:.6,oa:.3,ob:.7});
+}});
+
+T('tx-draw','Stroked text','Stroke Draw',{text:1,build(c){
+  bgSweep(c,'line');
+  const S=fitS(c,.8,.4),L=S*5,ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('width',c.W);svg.setAttribute('height',c.H);
+  svg.style.cssText='position:absolute;left:0;top:0;overflow:visible';
+  c.stage.appendChild(svg);
+  const mk=(stroke,dx,dy,fill)=>{
+    const t=document.createElementNS(ns,'text');
+    t.textContent=c.txt;
+    t.setAttribute('x',c.W/2+dx);t.setAttribute('y',c.H/2+dy);
+    t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','central');
+    const st=t.style;
+    st.fontFamily=c.font.fam;st.fontWeight=c.font.w;st.fontStyle=c.font.st;st.fontSize=S+'px';
+    st.fill=fill;st.stroke=stroke;st.strokeWidth=c.sw+'px';st.strokeLinejoin='round';
+    st.strokeDasharray=L+'px '+L+'px';
+    svg.appendChild(t);return t;
+  };
+  const off=px=>px+'px';
+  const accent=mk(c.o.c2,S*.04,S*.04,'none');
+  c.IO(accent,[{p:0,strokeDashoffset:off(L)}],{strokeDashoffset:off(0)},[{p:1,strokeDashoffset:off(-L)}],{ia:.1,ib:.8,oa:.1,ob:.9});
+  const main=mk(c.o.tc,0,0,c.o.tc);
+  c.IO(main,[{p:0,strokeDashoffset:off(L),fillOpacity:0},{p:.65,strokeDashoffset:off(0),fillOpacity:0}],
+    {strokeDashoffset:off(0),fillOpacity:1},
+    [{p:.35,strokeDashoffset:off(0),fillOpacity:0},{p:1,strokeDashoffset:off(-L),fillOpacity:0}],{ia:.25,ib:1,oa:0,ob:.8});
+}});
+
+/* ---------- tiled-logo transitions ---------- */
+function tileGeom(c){
+  const cols=clamp(Math.round(c.o.n*.6),3,14),sz=c.W/cols;
+  let rows=Math.ceil(c.H/sz);if(rows%2===0)rows++;
+  return {cols:cols,rows:rows,s:sz,y0:(c.H-rows*sz)/2};
+}
+function tileNode(c,sz,bgIdx,css){
+  const e=document.createElement('div');
+  e.style.cssText='width:'+(sz+.8)+'px;height:'+(sz+.8)+'px;background:'+c.cols[bgIdx%2]+';display:flex;align-items:center;justify-content:center;overflow:hidden;'+(css||'');
+  if(c.o.logo){
+    const im=document.createElement('img');
+    im.src=imgSrc(c.o.logo);
+    im.style.cssText='width:64%;height:64%;object-fit:contain;';
+    e.appendChild(im);
+  }else{
+    const ini=(c.txt.split(/\s+/).map(w=>w[0]||'').join('').toUpperCase().slice(0,4))||'LTN';
+    const S=Math.min(sz*.5,100*sz*.66/measure(c.font,ini));
+    mkSpan(e,ini,sty(c,S,'fill'));
+  }
+  return e;
+}
+function gridTiles(c,fn){
+  const g=tileGeom(c);
+  for(let y=0;y<g.rows;y++)for(let x=0;x<g.cols;x++){
+    const node=tileNode(c,g.s,x+y,'position:absolute;left:'+(x*g.s)+'px;top:'+(g.y0+y*g.s)+'px;');
+    c.stage.appendChild(node);
+    fn(node,x,y,g);
+  }
+}
+T('tl-pop','Tiled logos','Tile Pop',{n:1,tiles:1,build(c){
+  gridTiles(c,function(node){
+    c.IO(node,[{p:0,transform:'scale(0) rotate(-90deg)',easing:'cubic-bezier(.34,1.56,.64,1)'}],{transform:'scale(1) rotate(0deg)'},
+      [{p:1,transform:'scale(0) rotate(90deg)'}],{si:Math.random(),so:Math.random(),win:.65});
+  });
+}});
+T('tl-wave','Tiled logos','Tile Flip Wave',{n:1,tiles:1,build(c){
+  gridTiles(c,function(node,x,y,g){
+    const t=(x+y)/(g.cols+g.rows-2);
+    c.IO(node,[{p:0,transform:'perspective(700px) rotateY(-90deg)'}],{transform:'perspective(700px) rotateY(0deg)'},
+      [{p:1,transform:'perspective(700px) rotateY(90deg)'}],{si:t,so:t,win:.6});
+  });
+}});
+T('tl-slide','Tiled logos','Tile Slide Rows',{n:1,tiles:1,build(c){
+  const g=tileGeom(c),dist=c.W*.5,per=Math.ceil((c.W+dist)/g.s)+2;
+  for(let y=0;y<g.rows;y++){
+    const dir=y%2?1:-1;
+    const wrap=c.el('left:0;width:100%;top:'+(g.y0+y*g.s)+'px;height:'+(g.s+.8)+'px;overflow:hidden;');
+    const inner=document.createElement('div');
+    inner.style.cssText='position:absolute;left:0;top:0;height:100%;display:flex;';
+    for(let i=0;i<per;i++)inner.appendChild(tileNode(c,g.s,i+y,'flex:none;'));
+    wrap.appendChild(inner);
+    const x0=-Math.random()*g.s*2,a=dir>0?x0-dist:x0,b=dir>0?x0:x0-dist;
+    c.raw(inner,[{transform:'translate('+a+'px,0px)',offset:0},{transform:'translate('+b+'px,0px)',offset:1}]);
+    const si=g.rows>1?y/(g.rows-1):0,L='inset(0% 100% 0% 0%)',R='inset(0% 0% 0% 100%)';
+    c.IO(wrap,[{p:0,clipPath:dir>0?L:R}],{clipPath:'inset(0% 0% 0% 0%)'},[{p:1,clipPath:dir>0?R:L}],{si:si,so:si,win:.5});
+  }
+}});
+T('tl-spiral','Tiled logos','Tile Spiral',{n:1,tiles:1,build(c){
+  gridTiles(c,function(node,x,y,g){
+    const dx=x-(g.cols-1)/2,dy=y-(g.rows-1)/2,ring=Math.max(Math.abs(dx),Math.abs(dy));
+    const maxRing=Math.max((g.cols-1)/2,(g.rows-1)/2);
+    const t=clamp((ring+(Math.atan2(dy,dx)+Math.PI)/(2*Math.PI))/(maxRing+1),0,1);
+    c.IO(node,[{p:0,transform:'scale(0) rotate(-180deg)'}],{transform:'scale(1) rotate(0deg)'},
+      [{p:1,transform:'scale(0) rotate(180deg)'}],{si:t,so:1-t,win:.65});
+  });
+}});
+T('tl-rain','Tiled logos','Tile Rain',{n:1,tiles:1,build(c){
+  const g=tileGeom(c),colR=[];
+  for(let x=0;x<g.cols;x++)colR.push(Math.random());
+  gridTiles(c,function(node,x,y){
+    const t=clamp(colR[x]*.5+(g.rows>1?(1-y/(g.rows-1))*.5:0),0,1);
+    c.IO(node,[{p:0,transform:'translate(0px,'+(-(c.H+g.s))+'px)',easing:'cubic-bezier(.34,1.25,.64,1)'}],{transform:'translate(0px,0px)'},
+      [{p:1,transform:'translate(0px,'+(c.H+g.s)+'px)'}],{si:t,so:t,win:.65});
+  });
+}});
+
+/* ---------- logo helpers (SVG-aware) + angled marquee ---------- */
+window.__svgLogos=window.__svgLogos||{};
+const LOGO_DIMS={},_pre={},SVGNS='http://www.w3.org/2000/svg';
+function svgDims(txt){
+  try{
+    const d=new DOMParser().parseFromString(txt,'image/svg+xml').documentElement;
+    const vb=(d.getAttribute('viewBox')||'').trim().split(/[\s,]+/).map(Number);
+    if(vb.length===4&&vb[2]>0&&vb[3]>0)return {w:vb[2],h:vb[3]};
+    const w=parseFloat(d.getAttribute('width')),h=parseFloat(d.getAttribute('height'));
+    if(w>0&&h>0)return {w:w,h:h};
+  }catch(e){}
+  return {w:1,h:1};
+}
+// Loads dimensions (and, for .svg files next to the page, the markup via a small sidecar .js file the helper writes).
+function preloadLogo(key){
+  if(!key)return Promise.resolve();
+  if(_pre[key])return _pre[key];
+  _pre[key]=new Promise(function(res){
+    let done=false;
+    const end=()=>{if(!done){done=true;res()}};
+    const finish=()=>{
+      const txt=window.__svgLogos[key];
+      if(txt){LOGO_DIMS[key]=svgDims(txt);return end()}
+      const im=new Image();
+      im.onload=()=>{LOGO_DIMS[key]={w:im.naturalWidth||1,h:im.naturalHeight||1};end()};
+      im.onerror=end;
+      setTimeout(end,6000);
+      im.src=imgSrc(key);
+    };
+    const isSvg=/\.svg$/i.test(key.split('?')[0]);
+    const local=!/^(blob:|https?:|data:)/i.test(key)&&!/^[a-z]:[\\\/]/i.test(key);
+    if(isSvg&&local&&!window.__svgLogos[key]){
+      const sc=document.createElement('script');
+      sc.src=key+'.js';
+      sc.onload=finish;sc.onerror=finish;
+      document.head.appendChild(sc);
+      setTimeout(finish,3000);
+    }else finish();
+  });
+  return _pre[key];
+}
+const logoDim=k=>LOGO_DIMS[k]||{w:1,h:1};
+// Inline copy of the uploaded SVG; mode 'out' forces a stroke-only look.
+function svgNode(c,key,mode,w,h){
+  const txt=window.__svgLogos[key];
+  if(!txt)return null;
+  const doc=new DOMParser().parseFromString(txt,'image/svg+xml'),svg=doc.documentElement;
+  if(!svg||svg.localName!=='svg'||doc.getElementsByTagName('parsererror').length)return null;
+  svg.querySelectorAll('script,foreignObject').forEach(n=>n.remove());
+  [svg].concat([].slice.call(svg.querySelectorAll('*'))).forEach(n=>[].slice.call(n.attributes).forEach(a=>{
+    if(/^on/i.test(a.name)||/^\s*javascript:/i.test(a.value))n.removeAttribute(a.name);
+  }));
+  if(!svg.getAttribute('viewBox')){
+    const vw=parseFloat(svg.getAttribute('width')),vh=parseFloat(svg.getAttribute('height'));
+    if(vw>0&&vh>0)svg.setAttribute('viewBox','0 0 '+vw+' '+vh);
+  }
+  svg.setAttribute('width',w);svg.setAttribute('height',h);
+  svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+  if(mode==='out'){
+    // Inline styles on each element (a <style> block would leak to every other inline SVG on the page).
+    [svg].concat([].slice.call(svg.querySelectorAll('*'))).forEach(n=>{
+      if(!n.style)return;
+      n.style.setProperty('fill','none','important');
+      n.style.setProperty('stroke',c.o.tc,'important');
+      n.style.setProperty('stroke-width',c.sw+'px','important');
+      n.style.setProperty('stroke-linejoin','round','important');
+      n.style.setProperty('vector-effect','non-scaling-stroke','important');
+    });
+  }
+  const node=document.importNode(svg,true);
+  node.style.cssText='flex:none;overflow:visible;';
+  return node;
+}
+// Raster fallback for "stroked" rows: outline of the image's alpha edge.
+function outlineFilter(c){
+  if(c.stage.querySelector('#forge-outline'))return;
+  const s=document.createElementNS(SVGNS,'svg');
+  s.setAttribute('width','0');s.setAttribute('height','0');s.style.cssText='position:absolute;left:0;top:0';
+  s.innerHTML='<filter id="forge-outline" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">'+
+    '<feMorphology in="SourceAlpha" operator="dilate" radius="'+Math.max(1,c.sw)+'" result="d"/>'+
+    '<feComposite in="d" in2="SourceAlpha" operator="out" result="ring"/>'+
+    '<feFlood flood-color="'+c.o.tc+'" result="col"/>'+
+    '<feComposite in="col" in2="ring" operator="in"/></filter>';
+  c.stage.appendChild(s);
+}
+T('tl-marquee','Tiled logos','Angled Marquee',{n:1,tiles:1,scroll:1,angle:1,build(c){
+  bgSweep(c,'slash');
+  const W=c.W,H=c.H,S=Math.hypot(W,H)*1.15,ang=+c.o.ang||0;
+  const pitch=H/(clamp(c.o.n,3,24)*.5),ih=pitch*.72,key=c.o.logo||'';
+  const inlineSvg=!!(key&&window.__svgLogos[key]);
+  if(key&&!inlineSvg)outlineFilter(c);
+  let iw,mk;
+  if(key){
+    const dm=logoDim(key);iw=ih*dm.w/dm.h;
+    mk=function(mode){
+      if(inlineSvg){const n=svgNode(c,key,mode,iw,ih);if(n)return n}
+      const im=document.createElement('img');
+      im.src=imgSrc(key);
+      im.style.cssText='flex:none;width:'+iw+'px;height:'+ih+'px;object-fit:contain;'+(mode==='out'?'filter:url(#forge-outline);':'');
+      return im;
+    };
+  }else{
+    const fs=ih*.85;iw=measure(c.font,c.txt)*fs/100;
+    mk=function(mode){const e=document.createElement('span');e.textContent=c.txt;e.style.cssText=sty(c,fs,mode==='out'?'out':'fill')+'flex:none;';return e};
+  }
+  const gap=ih*.55,period=iw+gap,rows=Math.ceil(S/pitch)|1,mid=(rows-1)/2;
+  const dist=S*.4*clamp(+c.o.sc||1,.25,4),copies=Math.min(60,Math.ceil((S+dist)/period)+2);
+  const rot=c.el('left:'+((W-S)/2)+'px;top:'+((H-S)/2)+'px;width:'+S+'px;height:'+S+'px;transform:rotate('+ang+'deg);');
+  for(let r=0;r<rows;r++){
+    const k=r-mid,dir=r%2?1:-1,mode=Math.abs(k)%2?'out':'fill';
+    const wrap=document.createElement('div');
+    wrap.style.cssText='position:absolute;left:0;width:100%;top:'+(S/2+k*pitch-pitch/2)+'px;height:'+pitch+'px;overflow:hidden;';
+    rot.appendChild(wrap);
+    const inner=document.createElement('div');
+    inner.style.cssText='position:absolute;left:0;top:0;height:100%;display:flex;align-items:center;gap:'+gap+'px;';
+    for(let i=0;i<copies;i++)inner.appendChild(mk(mode));
+    wrap.appendChild(inner);
+    const x0=-Math.random()*period,a=dir>0?x0-dist:x0,b=dir>0?x0:x0-dist;
+    c.raw(inner,[{transform:'translate('+a+'px,0px)',offset:0},{transform:'translate('+b+'px,0px)',offset:1}]);
+    const si=rows>1?r/(rows-1):0,L='inset(0% 100% 0% 0%)',R='inset(0% 0% 0% 100%)';
+    c.IO(wrap,[{p:0,clipPath:dir>0?L:R}],{clipPath:'inset(0% 0% 0% 0%)'},[{p:1,clipPath:dir>0?R:L}],{ia:.2,si:si,so:si,win:.5});
+  }
+}});
+
+/* ---------- engine ---------- */
+let token=0;
+function run(stage,o,hooks){
+  hooks=hooks||{};
+  const my=++token;
+  stage.getAnimations({subtree:true}).forEach(a=>a.cancel());
+  stage.textContent='';
+  const W=stage.clientWidth,H=stage.clientHeight,d=o.d;
+  const spec=TR[o.t]||TR.fade;
+  const M=spec.stag?d*0.14:0;
+  const hd=Math.max(0,Math.min(o.h,d*0.7-2*M));
+  const u=(d-hd-2*M)/2;
+  const E=EASE[o.e]||EASE.smooth;
+  const full=o.mode==='full';
+  const startAt=full?0:M+u;
+  const play=(el,kf)=>{const a=el.animate(kf,{duration:d,fill:'both'});a.currentTime=startAt;if(hooks.paused)a.pause();return a};
+  const f=x=>clamp(x/d,0,1);
+  const font=FONTS[o.font]||FONTS.heavy;
+  const c={W,H,o,M,u,hd,d,cols:[o.c1,o.c2,o.c3],stage,font,txt:o.text||'LOVE THY NERD',sw:Math.max(1,o.sw*H/1080),
+    el(css){const e=document.createElement('div');e.style.cssText='position:absolute;'+css;stage.appendChild(e);return e},
+    raw(el,kf){return play(el,kf)},
+    IO(el,ins,hold,outs,q){
+      q=Object.assign({ia:0,ib:1,oa:0,ob:1,si:0,so:0,win:0},q||{});
+      if(spec.text&&!q.bg){
+        const sp=clamp(+o.ts||1,.5,4),L=(q.ib-q.ia)/sp;
+        if(q.ia+L>1){q.ia=Math.max(0,1-L);q.ib=1}else q.ib=q.ia+L;
+        q.ob=Math.min(1,q.oa+(q.ob-q.oa)/sp);
+        q.win=clamp(q.win*((isNaN(+o.stg)?50:+o.stg)/50),0,.9);
+      }
+      const iS=u*(q.ia+q.si*q.win*(q.ib-q.ia)),iD=u*(q.ib-q.ia)*(1-q.win);
+      const oS=u+hd+u*(q.oa+q.so*q.win*(q.ob-q.oa)),oD=u*(q.ob-q.oa)*(1-q.win);
+      const st=k=>{const r=Object.assign({},k);delete r.p;delete r.easing;return r};
+      const kf=[Object.assign(st(ins[0]),{offset:0})];
+      ins.forEach(k=>kf.push(Object.assign(st(k),{offset:f(iS+k.p*iD),easing:k.easing||E})));
+      kf.push(Object.assign(st(hold),{offset:f(iS+iD),easing:'linear'}));
+      kf.push(Object.assign(st(hold),{offset:f(oS),easing:E}));
+      outs.forEach((k,i)=>kf.push(Object.assign(st(k),{offset:f(oS+k.p*oD)},i<outs.length-1?{easing:k.easing||E}:{})));
+      const last=outs[outs.length-1];
+      if(f(oS+last.p*oD)<1)kf.push(Object.assign(st(last),{offset:1}));
+      return play(el,kf);
+    },
+    A(el,from,mid,to,din,dout){
+      din=din||0;dout=dout||0;
+      const t0=din*M,t1=t0+u,t2=M+u+hd+dout*M,t3=t2+u;
+      const kf=[
+        Object.assign({},from,{offset:0}),
+        Object.assign({},from,{offset:f(t0),easing:E}),
+        Object.assign({},mid,{offset:f(t1),easing:'linear'}),
+        Object.assign({},mid,{offset:f(t2),easing:E}),
+        Object.assign({},to,{offset:f(t3)})
+      ];
+      if(f(t3)<1)kf.push(Object.assign({},to,{offset:1}));
+      return play(el,kf);
+    }
+  };
+  spec.build(c);
+
+  if(spec.text){
+    if(o.logo){
+      const L=c.el('left:0;width:100%;bottom:'+(H*.06)+'px;height:'+(H*.16)+'px;display:flex;align-items:center;justify-content:center;');
+      const img=document.createElement('img');
+      img.src=imgSrc(o.logo);
+      img.style.cssText='max-width:'+(W*.4)+'px;max-height:100%;object-fit:contain;filter:drop-shadow(0 4px 12px rgba(0,0,0,.4))';
+      L.appendChild(img);
+      c.IO(L,[{p:0,opacity:0}],{opacity:1},[{p:1,opacity:0}],{ia:.5,ib:1,oa:0,ob:.5,bg:1});
+    }
+  }else if(!spec.tiles&&(o.logo||o.text)){
+    const L=c.el('inset:0;display:flex;align-items:center;justify-content:center;');
+    if(o.logo){
+      const img=document.createElement('img');
+      img.src=imgSrc(o.logo);
+      img.style.cssText='max-width:'+(W*.5)+'px;max-height:'+(H*.45)+'px;object-fit:contain;filter:drop-shadow(0 6px 18px rgba(0,0,0,.45))';
+      L.appendChild(img);
+    }
+    if(o.text){
+      const t=document.createElement('div');
+      t.textContent=o.text;
+      t.style.cssText='font:900 '+Math.min(W*.075,H*.16)+'px/1.1 Impact,Haettenschweiler,"Arial Black",sans-serif;letter-spacing:.06em;white-space:nowrap;color:'+o.tc+';text-shadow:0 .05em 0 rgba(0,0,0,.35);margin-left:'+(o.logo?'.4em':'0');
+      L.appendChild(t);
+    }
+    c.A(L,{opacity:0,transform:'scale(.7)'},{opacity:1,transform:'scale(1)'},{opacity:0,transform:'scale(1.2)'},.5,.5);
+  }
+
+  if(hooks.start)hooks.start(full);
+  const remaining=d-startAt;
+  if(full&&hooks.mid)setTimeout(()=>{if(my===token)hooks.mid()},d/2);
+  setTimeout(()=>{if(my===token){stage.textContent='';if(hooks.end)hooks.end()}},remaining+60);
+  return remaining;
+}
+
+/* ---------- options parsing ---------- */
+const hex=(v,fb)=>/^#?[0-9a-f]{3,8}$/i.test(v||'')?('#'+String(v).replace('#','')):fb;
+function parseOpts(search){
+  const q=new URLSearchParams(search),o=Object.assign({},DEF);
+  if(q.has('t')&&TR[q.get('t')])o.t=q.get('t');
+  if(q.has('d'))o.d=clamp(+q.get('d')||DEF.d,300,10000);
+  if(q.has('h'))o.h=clamp(isNaN(+q.get('h'))?DEF.h:+q.get('h'),0,5000);
+  if(q.has('n'))o.n=clamp(Math.round(+q.get('n')||DEF.n),3,24);
+  if(q.has('e')&&EASE[q.get('e')])o.e=q.get('e');
+  ['c1','c2','c3','tc'].forEach(k=>{if(q.has(k))o[k]=hex(q.get(k),DEF[k])});
+  if(q.has('mode')&&/^(reveal|full)$/.test(q.get('mode')))o.mode=q.get('mode');
+  if(q.has('font')&&FONTS[q.get('font')])o.font=q.get('font');
+  if(q.has('sw'))o.sw=clamp(+q.get('sw')||DEF.sw,1,20);
+  if(q.has('ts'))o.ts=clamp(+q.get('ts')||DEF.ts,.5,4);
+  if(q.has('stg'))o.stg=clamp(isNaN(+q.get('stg'))?DEF.stg:+q.get('stg'),0,100);
+  if(q.has('sc'))o.sc=clamp(+q.get('sc')||DEF.sc,.25,4);
+  if(q.has('ang'))o.ang=clamp(isNaN(+q.get('ang'))?DEF.ang:+q.get('ang'),-60,60);
+  if(q.has('logo'))o.logo=q.get('logo');
+  if(q.has('text'))o.text=q.get('text');
+  return o;
+}
+const stage=document.getElementById('stage');
+const O=parseOpts(location.search);
+
+/* ---------- player mode (OBS) ---------- */
+if(new URLSearchParams(location.search).has('t')){
+  document.body.classList.add('player');
+  document.body.appendChild(stage);
+  document.getElementById('app').remove();
+  let last=0;
+  const ready=preloadLogo(O.logo);
+  const go=()=>{const n=performance.now();if(n-last<500)return;last=n;ready.then(()=>run(stage,O))};
+  const loopOn=new URLSearchParams(location.search).get('loop')==='1';
+  if(new URLSearchParams(location.search).has('render')){
+    window.__forgeRender={
+      prepare(){
+        return preloadLogo(O.logo).then(()=>{
+        run(stage,Object.assign({},O,{mode:'full'}),{paused:true});
+        const imgs=[...stage.querySelectorAll('img')];
+        return Promise.all(imgs.map(i=>Promise.race([i.decode().catch(()=>console.warn('Logo failed to load: '+i.src)),new Promise(r=>setTimeout(r,8000))]))).then(()=>({d:O.d,mid:O.d/2}));
+        });
+      },
+      seek(ms){stage.getAnimations({subtree:true}).forEach(a=>{a.currentTime=ms});}
+    };
+    return;
+  }
+  if(new URLSearchParams(location.search).get('ctl')==='obs'){
+    // Driven by the Forge OBS plugin: stay idle (fully transparent) until OBS makes this source active.
+    O.mode='full';
+    window.addEventListener('obsSourceActiveChanged',e=>{if(e.detail&&e.detail.active)go()});
+    window.addEventListener('obsSourceVisibleChanged',e=>{if(e.detail&&e.detail.visible)go()});
+    window.forgePlay=()=>{last=0;go()};
+    return;
+  }
+  const go2=()=>{
+    go();
+    if(loopOn)setTimeout(()=>{last=0;go2()},O.d+900);
+  };
+  window.addEventListener('obsSourceVisibleChanged',e=>{if(e.detail&&e.detail.visible)go()});
+  window.addEventListener('obsSourceActiveChanged',e=>{if(e.detail&&e.detail.active)go()});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)go()});
+  document.addEventListener('click',()=>{last=0;go()});
+  document.addEventListener('keydown',()=>{last=0;go()});
+  go2();
+  return;
+}
+
+/* ---------- generator UI ---------- */
+const $=id=>document.getElementById(id);
+const S=O;
+const scA=$('scA'),scB=$('scB');
+const setScene=w=>{scA.classList.toggle('show',w==='a');scB.classList.toggle('show',w==='b')};
+
+// chips
+const chipsEl=$('chips');
+const groups={};
+Object.keys(TR).forEach(id=>{(groups[TR[id].g]=groups[TR[id].g]||[]).push(id)});
+Object.keys(groups).forEach(g=>{
+  const h=document.createElement('div');h.className='group';h.textContent=g;chipsEl.appendChild(h);
+  const w=document.createElement('div');w.className='chips';chipsEl.appendChild(w);
+  groups[g].forEach(id=>{
+    const b=document.createElement('button');b.className='chip';b.dataset.t=id;b.textContent=TR[id].l;
+    b.onclick=()=>{S.t=id;sync();play()};
+    w.appendChild(b);
+  });
+});
+
+// presets
+const presetSel=$('preset');
+['Custom'].concat(Object.keys(PRESETS)).forEach(n=>{const op=document.createElement('option');op.value=op.textContent=n;presetSel.appendChild(op)});
+presetSel.onchange=()=>{
+  const p=PRESETS[presetSel.value];if(!p)return;
+  S.c1=p[0];S.c2=p[1];S.c3=p[2];sync();play();
+};
+
+const keys=['d','h','n','e','mode','font','sw','ts','stg','sc','ang','c1','c2','c3','logo','text','tc'];
+keys.forEach(k=>{
+  const el=$(k);
+  el.addEventListener('input',()=>{
+    S[k]=(el.type==='range')?+el.value:el.value;
+    if(k==='logo'){logoBlob='';logoSaved=''}
+    if(/^c[123]$/.test(k))presetSel.value='Custom';
+    sync(true);
+  });
+  el.addEventListener('change',()=>play());
+});
+
+let SRV=null;
+const srvHeaders=x=>Object.assign({'X-Forge':'1'},x||{});
+function pageBase(){return SRV?SRV.fileUrl:location.href.split('#')[0].split('?')[0]}
+function buildQuery(){
+  const p=new URLSearchParams();
+  p.set('t',S.t);
+  ['d','h','n','e','mode','font','sw','ts','stg','sc','ang'].forEach(k=>p.set(k,S[k]));
+  ['c1','c2','c3'].forEach(k=>p.set(k,S[k].replace('#','')));
+  p.set('tc',S.tc.replace('#',''));
+  p.set('text',S.text);
+  if(S.logo)p.set('logo',S.logo);
+  return '?'+p.toString();
+}
+function buildURL(){return pageBase()+buildQuery()}
+let logoBlob='',logoSaved='',exporting=false,abortCtl=null;
+function updateLogoUI(){
+  const src=logoBlob||(S.logo?imgSrc(S.logo):'');
+  const th=$('logoThumb');
+  th.hidden=!src;
+  if(src&&th.getAttribute('src')!==src)th.src=src;
+  $('logoClear').hidden=!S.logo;
+  let h='You can also drop an image onto the preview.';
+  if(logoSaved){
+    h='Saved \u201c'+logoSaved+'\u201d into your Forge folder'+(SRV?' ('+SRV.root+')':'')+'.';
+  }else if(logoBlob){
+    const dir=SRV?SRV.root:(location.protocol==='file:'?decodeURI(pageBase()).replace(/[^\/]*$/,'').replace(/^file:\/\/\//,''):'');
+    h='Copy \u201c'+S.logo+'\u201d into the same folder as this page'+(dir?' ('+dir+')':'')+' so OBS and the renderer can find it. Run start-forge.bat and I will save it there for you.';
+  }
+  if(/\.svg$/i.test(S.logo||'')&&!SRV)h+=' For true stroked/filled SVG rows in OBS, run start-forge.bat so the SVG gets prepared.';
+  $('logoHint').textContent=h;
+}
+async function pickLogo(f){
+  if(!f||!/^image\//.test(f.type))return;
+  if(logoBlob)URL.revokeObjectURL(logoBlob);
+  logoBlob=URL.createObjectURL(f);
+  S.logo=f.name;logoSaved='';
+  if(/svg/i.test(f.type)||/\.svg$/i.test(f.name)){try{window.__svgLogos[logoBlob]=await f.text()}catch(e){}}
+  if(SRV){
+    try{
+      const r=await fetch('/api/logo?name='+encodeURIComponent(f.name),{method:'POST',headers:srvHeaders(),body:f});
+      const j=await r.json();
+      if(r.ok&&j.name){S.logo=j.name;logoSaved=j.name}
+    }catch(e){}
+  }
+  $('logo').value=S.logo;
+  sync(true);
+  play();
+}
+function sync(fromInput){
+  document.querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',b.dataset.t===S.t));
+  if(!fromInput)keys.forEach(k=>{$(k).value=S[k]});
+  $('o_d').textContent=S.d+' ms';
+  $('o_h').textContent=S.h+' ms';
+  $('o_n').textContent=S.n;
+  $('o_sw').textContent=S.sw+' px';
+  $('rowN').classList.toggle('dim',!TR[S.t].n);
+  $('o_ts').textContent=(+S.ts).toFixed(1)+'\u00d7';
+  $('o_stg').textContent=S.stg+'%';
+  $('o_sc').textContent=(+S.sc).toFixed(2).replace(/0$/,'')+'\u00d7';
+  $('textSec').hidden=!TR[S.t].text;
+  $('o_ang').textContent=S.ang+'\u00b0';
+  $('rowAng').hidden=!TR[S.t].angle;
+  $('rowSc').hidden=!TR[S.t].scroll;
+  const u=buildURL();
+  $('url').value=u;
+  updateLogoUI();
+  $('open').href=u;
+  const ffp=$('ffpath').value.trim();
+  const fps=+$('fps').value||30,outn=$('outname').value.trim()||'ltn-stinger.webm';
+  $('cmd').value='node render-stinger.mjs "'+u+'" --fps '+fps+' --out "'+outn.replace(/"/g,'')+'"'+(ffp?' --ffmpeg "'+ffp.replace(/"/g,'')+'"':'');
+  $('tp').textContent='Transition Point for OBS: '+Math.round(S.d/2)+' ms (frame '+Math.round(fps*S.d/2000)+' at '+fps+' fps).';
+}
+
+let loopTimer=0;
+function play(){
+  clearTimeout(loopTimer);
+  const lg=logoBlob||S.logo;
+  preloadLogo(lg).then(()=>doPlay(lg));
+}
+function doPlay(lg){
+  clearTimeout(loopTimer);
+  const rem=run(stage,Object.assign({},S,{logo:lg}),{
+    start:full=>setScene(full?'a':'b'),
+    mid:()=>setScene('b'),
+    end:()=>{if($('loop').checked)loopTimer=setTimeout(play,700)}
+  });
+}
+$('logoBtn').onclick=()=>$('logoFile').click();
+$('logoFile').onchange=e=>{pickLogo(e.target.files[0]);e.target.value=''};
+$('logoClear').onclick=()=>{logoBlob='';logoSaved='';S.logo='';$('logo').value='';sync(true);play()};
+const pvEl=$('pv');
+['dragenter','dragover'].forEach(ev=>pvEl.addEventListener(ev,e=>{e.preventDefault();pvEl.classList.add('drop')}));
+['dragleave','drop'].forEach(ev=>pvEl.addEventListener(ev,e=>{e.preventDefault();pvEl.classList.remove('drop')}));
+pvEl.addEventListener('drop',e=>pickLogo(e.dataTransfer.files[0]));
+$('play').onclick=play;
+$('loop').onchange=()=>{if($('loop').checked)play();else clearTimeout(loopTimer)};
+$('copy').onclick=()=>{
+  const ta=$('url');
+  const done=()=>{$('copied').textContent='Copied!';setTimeout(()=>$('copied').textContent='',1600)};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(done,()=>{ta.select();document.execCommand('copy');done()})}
+  else{ta.select();document.execCommand('copy');done()}
+};
+
+$('copycmd').onclick=()=>{
+  const ta=$('cmd');
+  const done=()=>{$('copied2').textContent='Copied!';setTimeout(()=>$('copied2').textContent='',1600)};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(done,()=>{ta.select();document.execCommand('copy');done()})}
+  else{ta.select();document.execCommand('copy');done()}
+};
+const FF_KEY='forge.ffpath',FF_DEFAULT='';
+let ffSaved=null;try{ffSaved=localStorage.getItem(FF_KEY)}catch(e){}
+$('ffpath').value=ffSaved!==null?ffSaved:FF_DEFAULT;
+$('ffpath').addEventListener('input',()=>{try{localStorage.setItem(FF_KEY,$('ffpath').value)}catch(e){}sync(true)});
+const FPS_KEY='forge.fps',OUT_KEY='forge.out';
+let fpsSaved=null,outSaved=null;try{fpsSaved=localStorage.getItem(FPS_KEY);outSaved=localStorage.getItem(OUT_KEY)}catch(e){}
+$('fps').value=['24','30','60'].includes(fpsSaved)?fpsSaved:'30';
+$('outname').value=outSaved||'ltn-stinger.webm';
+$('fps').addEventListener('change',()=>{try{localStorage.setItem(FPS_KEY,$('fps').value)}catch(e){}sync(true)});
+$('outname').addEventListener('input',()=>{try{localStorage.setItem(OUT_KEY,$('outname').value)}catch(e){}sync(true)});
+
+function updateServerUI(){
+  $('exportBtn').disabled=!SRV||exporting;
+  const n=$('srvNote');
+  if(SRV)n.textContent='Helper connected. Videos and logos are saved in '+SRV.root;
+  else n.innerHTML='To export with one click, double-click <code>start-forge.bat</code> in your Forge folder and use the page it opens. Until then, copy the command below.';
+}
+async function doExport(){
+  if(!SRV||exporting)return;
+  exporting=true;updateServerUI();
+  const log=$('log'),bar=$('progBar'),state=$('exportState');
+  log.hidden=false;log.textContent='';$('prog').hidden=false;bar.style.width='0%';
+  $('cancelBtn').hidden=false;state.textContent='Starting\u2026';
+  abortCtl=new AbortController();
+  let exit=null,outPath='',buf='';
+  const handle=line=>{
+    let m;
+    if((m=/^__EXIT__:(\d+)/.exec(line)))exit=+m[1];
+    else if((m=/^__OUT__:(.*)/.exec(line)))outPath=m[1];
+    else if((m=/frame (\d+)\/(\d+)/.exec(line))){bar.style.width=(100*m[1]/m[2])+'%';state.textContent='Rendering frame '+m[1]+' of '+m[2]}
+    else if(line.trim()){log.textContent+=line+'\n';log.scrollTop=log.scrollHeight}
+  };
+  try{
+    const r=await fetch('/api/render',{method:'POST',signal:abortCtl.signal,headers:srvHeaders({'Content-Type':'application/json'}),
+      body:JSON.stringify({query:buildQuery(),fps:+$('fps').value,out:$('outname').value.trim(),ffmpeg:$('ffpath').value.trim()})});
+    if(!r.ok){const j=await r.json().catch(()=>({}));throw new Error(j.error||('Server error '+r.status))}
+    const rd=r.body.getReader(),dec=new TextDecoder();
+    for(;;){
+      const x=await rd.read();if(x.done)break;
+      buf+=dec.decode(x.value,{stream:true});
+      const parts=buf.split(/[\r\n]+/);buf=parts.pop();parts.forEach(handle);
+    }
+    if(buf)handle(buf);
+    if(exit===0){bar.style.width='100%';state.textContent='Done. Saved '+outPath;}
+    else state.textContent='Export failed. See the log above.';
+  }catch(e){
+    state.textContent=e.name==='AbortError'?'Cancelled.':'Export failed: '+e.message;
+  }finally{
+    exporting=false;abortCtl=null;$('cancelBtn').hidden=true;updateServerUI();
+  }
+}
+$('exportBtn').onclick=doExport;
+$('cancelBtn').onclick=()=>{if(abortCtl)abortCtl.abort()};
+
+/* ---------- OBS plugin presets ---------- */
+const OBS_KEY='forge.obsname';
+function slugify(n){return n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,50)}
+async function loadPresets(){
+  const box=$('obsList');box.textContent='';
+  if(!SRV)return;
+  try{
+    const r=await fetch('/api/presets',{headers:srvHeaders()});if(!r.ok)return;
+    const j=await r.json();
+    (j.presets||[]).forEach(p=>{
+      const row=document.createElement('div');row.className='row';row.style.cssText='display:flex;gap:8px;align-items:center;justify-content:space-between';
+      const nm=document.createElement('span');nm.textContent='Forge: '+p.name+' ('+p.duration+' ms)';
+      const b=document.createElement('button');b.textContent='Remove';
+      b.onclick=async()=>{await fetch('/api/preset?id='+encodeURIComponent(p.id),{method:'DELETE',headers:srvHeaders()});loadPresets()};
+      row.appendChild(nm);row.appendChild(b);box.appendChild(row);
+    });
+  }catch(e){}
+}
+function updateObsUI(){
+  $('obsSave').disabled=!SRV||!$('obsname').value.trim();
+  $('obsNote').textContent=SRV?(SRV.presetsDir?('Presets are saved to '+SRV.presetsDir):''):'Start the helper (start-forge.bat) and use the page it opens to save transitions for OBS.';
+}
+async function saveObs(){
+  const name=$('obsname').value.trim();if(!SRV||!name)return;
+  try{localStorage.setItem(OBS_KEY,name)}catch(e){}
+  const st=$('obsState');st.textContent='Saving\u2026';
+  try{
+    const r=await fetch('/api/preset',{method:'POST',headers:srvHeaders({'Content-Type':'application/json'}),body:JSON.stringify({name:name,query:buildQuery()})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(j.error||('Server error '+r.status));
+    st.textContent='Saved. In OBS: Scene Transitions > + > Forge: '+name;
+    loadPresets();
+  }catch(e){st.textContent='Could not save: '+e.message}
+}
+try{$('obsname').value=localStorage.getItem(OBS_KEY)||''}catch(e){}
+$('obsname').addEventListener('input',updateObsUI);
+$('obsSave').onclick=saveObs;
+if(/^https?:$/.test(location.protocol)){
+  fetch('/api/ping',{headers:srvHeaders()}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.ok){SRV=j;sync(true);loadPresets()}updateServerUI();updateObsUI()}).catch(()=>{updateServerUI();updateObsUI()});
+}
+updateObsUI();
+updateServerUI();
+sync();
+setTimeout(play,250);
+window.__forge={run,TR,S,stage};
+})();
+</script>
+</body>
+</html>

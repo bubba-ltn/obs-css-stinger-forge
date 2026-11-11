@@ -1,0 +1,15 @@
+name: Build
+run-name: Build ${{ github.ref_name }}
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-project:
+    name: Build Project
+    uses: ./.github/workflows/build-project.yaml
+    secrets: inherit
+    permissions:
+      contents: read

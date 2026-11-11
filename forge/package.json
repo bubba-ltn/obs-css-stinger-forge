@@ -1,0 +1,14 @@
+{
+  "name": "transition-forge",
+  "version": "1.0.0",
+  "description": "Transition Forge: CSS scene transitions for OBS",
+  
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "dependencies": {
+    "playwright": "^1.64.0"
+  }
+}

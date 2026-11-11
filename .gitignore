@@ -1,0 +1,8 @@
+build_*/
+release/
+.cache/
+node_modules/
+installer/stage/
+node-tmp/
+*.webm
+*.mov
