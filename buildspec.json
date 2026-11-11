@@ -28,7 +28,11 @@
             }
         }
     },
-    "platformConfig": {},
+    "platformConfig": {
+        "macos": {
+            "bundleId": "com.lovethynerd.obs-css-stinger-forge"
+        }
+    },
     "name": "forge-transitions",
     "displayName": "OBS CSS Stinger Forge",
     "version": "0.1.0",
